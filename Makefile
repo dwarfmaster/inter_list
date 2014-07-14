@@ -1,5 +1,6 @@
 OBJS=objs/main.o \
-	 objs/spawn.o
+	 objs/spawn.o \
+	 objs/strformat.o
 CFLAGS=-Wall -Wextra
 LDFLAGS=
 PROG=list.out
