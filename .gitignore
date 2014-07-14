@@ -1,0 +1,30 @@
+# Compiled files
+objs/
+*.slo
+*.lo
+*.ko
+*.o
+*.obj
+*.elf
+# Compiled dynamic libraries
+*.so
+*.so.*
+*.dylib
+*.dll
+# Compiled static libraries
+*.lai
+*.la
+*.a
+*.lib
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+## Temp files
+*.swp
+*~
+
