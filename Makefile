@@ -1,7 +1,7 @@
 OBJS=objs/main.o \
 	 objs/spawn.o \
 	 objs/strformat.o
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -g
 LDFLAGS=
 PROG=list.out
 CC=gcc
