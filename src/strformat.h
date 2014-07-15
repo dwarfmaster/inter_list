@@ -5,7 +5,6 @@
 typedef struct _strformat_symbs_t {
     char*  symbols;
     char** contents;
-    char*  buffer;
 } strformat_symbs_t;
 
 struct _strformat_t;
@@ -13,7 +12,8 @@ typedef struct _strformat_t strformat_t;
 
 /* You must provide the list of symbols to be parsed. Each symbol is a single
  * letter, which, when preceded in a string by a %, will be replaced by another
- * value.
+ * value. symbols mustn't include any deduplicated letters : it will result in
+ * an undefined behaviour.
  */
 strformat_symbs_t* strformat_symbols(char* symbols);
 
@@ -37,6 +37,7 @@ void strformat_destroy(strformat_t* fmt);
 /* Get the string with the symbols replaced from an strformat_t object. The
  * string belong to the object, so it mustn't be free'd. It will remain valid
  * until the next call to this function or until the destruction of the object.
+ * It will return an empty but valid string in cse of errors.
  */
 const char* strformat_get(strformat_t* fmt);
 
