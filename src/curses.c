@@ -16,22 +16,28 @@ static size_t _curses_list_capacity;
 static char** _curses_list_lines;
 static size_t _curses_list_sel;
 static size_t _curses_list_offset;
+static int    _curses_list_color;
+static bool   _curses_list_mustdraw;
 
 /* Top and bottom bars. */
 static bool  _curses_top_enable;
 static char* _curses_top_str;
-static bool  _curses_bot_enable;
-static char* _curses_bot_str;
 static int   _curses_top_fg;
 static int   _curses_top_bg;
+static bool  _curses_top_mustdraw;
+
+static bool  _curses_bot_enable;
+static char* _curses_bot_str;
 static int   _curses_bot_fg;
 static int   _curses_bot_bg;
+static bool  _curses_bot_mustdraw;
 
 /* Command line. */
 static bool        _curses_cmd_in;
 static const char* _curses_cmd_prefix;
 static char        _curses_cmd_text[CURSES_TEXT_LENGTH];
 static size_t      _curses_cmd_pos;
+static bool        _curses_cmd_mustdraw;
 
 /********************* Generic Ncurses abilities *****************************/
 bool curses_init()
@@ -70,6 +76,12 @@ bool curses_init()
     _curses_cmd_in     = false;
     _curses_cmd_prefix = "";
 
+    /* Preparing drawing. */
+    _curses_list_mustdraw = true;
+    _curses_top_mustdraw  = true;
+    _curses_bot_mustdraw  = true;
+    _curses_cmd_mustdraw  = true;
+
     return true;
 }
 
@@ -93,21 +105,42 @@ void curses_change_color(int c, uint8_t r, uint8_t g, uint8_t b)
 
 void curses_draw()
 {
+    if(_curses_list_mustdraw) {
+        /* TODO */
+        _curses_list_mustdraw = false;
+    }
+
+    if(_curses_top_mustdraw) {
+        /* TODO */
+        _curses_top_mustdraw = false;
+    }
+
+    if(_curses_bot_mustdraw) {
+        /* TODO */
+        _curses_cmd_mustdraw = false;
+    }
+
+    if(_curses_cmd_mustdraw) {
+        /* TODO */
+        _curses_cmd_mustdraw = false;
+    }
+
     refresh();
 }
 
 /********************* List handling abilities *******************************/
 void curses_list_color(int c)
 {
-    /* TODO */
+    _curses_list_color = c;
+    /* TODO redraw selected line. */
 }
 
 void curses_list_clear()
 {
-    _curses_list_nb     = 0;
-    _curses_list_sel    = 0;
-    _curses_list_offset = 0;
-    curses_list_redraw();
+    _curses_list_nb       = 0;
+    _curses_list_sel      = 0;
+    _curses_list_offset   = 0;
+    _curses_list_mustdraw = true;
 }
 
 bool curses_list_add_lines(size_t nb, char** lines)
@@ -152,8 +185,8 @@ bool curses_list_set(size_t nb)
 
 void curses_list_right(unsigned int nb)
 {
-    _curses_list_offset += nb;
-    curses_list_redraw();
+    _curses_list_offset  += nb;
+    _curses_list_mustdraw = true;
 }
 
 bool curses_list_left(unsigned int nb)
@@ -167,19 +200,14 @@ bool curses_list_left(unsigned int nb)
         _curses_list_offset -= nb;
         ret = true;
     }
-    curses_list_redraw();
+    _curses_list_mustdraw = true;
     return ret;
 }
 
 void curses_list_offset_reset()
 {
-    _curses_list_offset = 0;
-    curses_list_redraw();
-}
-
-void curses_list_redraw()
-{
-    /* TODO */
+    _curses_list_offset   = 0;
+    _curses_list_mustdraw = true;
 }
 
 /********************* Bars abilities ****************************************/
@@ -190,7 +218,7 @@ bool curses_top_set(const char* str)
 
     if(str) {
         _curses_top_str = strdup(str);
-        /* TODO draw the bar. */
+        _curses_top_mustdraw = true;
         if(!_curses_top_enable) {
             _curses_top_enable = true;
             return true;
@@ -213,7 +241,7 @@ bool curses_bot_set(const char* str)
 
     if(str) {
         _curses_bot_str = strdup(str);
-        /* TODO draw the bar. */
+        _curses_bot_mustdraw = true;
         if(!_curses_bot_enable) {
             _curses_bot_enable = true;
             return true;
@@ -231,14 +259,16 @@ bool curses_bot_set(const char* str)
 
 void curses_top_colors(int fg, int bg)
 {
-    _curses_top_fg = fg;
-    _curses_top_bg = bg;
+    _curses_top_fg       = fg;
+    _curses_top_bg       = bg;
+    _curses_top_mustdraw = true;
 }
 
 void curses_bot_colors(int fg, int bg)
 {
-    _curses_bot_fg = fg;
-    _curses_bot_bg = bg;
+    _curses_bot_fg       = fg;
+    _curses_bot_bg       = bg;
+    _curses_bot_mustdraw = true;
 }
 
 void curses_command_enter(const char* prefix)
@@ -251,7 +281,10 @@ void curses_command_enter(const char* prefix)
 
 const char* curses_command_leave()
 {
-    _curses_cmd_in = false;
+    if(!_curses_cmd_in)
+        return "";
+    _curses_cmd_in       = false;
+    _curses_cmd_mustdraw = true;
     return _curses_cmd_text;
 }
 
@@ -261,6 +294,7 @@ bool curses_command_parse_event(char c)
         _curses_cmd_text[_curses_cmd_pos] = c;
         ++_curses_cmd_pos;
         _curses_cmd_text[_curses_cmd_pos] = '\0';
+        _curses_cmd_mustdraw = true;
         return true;
     }
     else if(c == '\n')
