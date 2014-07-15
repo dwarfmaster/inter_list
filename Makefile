@@ -1,8 +1,9 @@
 OBJS=objs/main.o \
 	 objs/spawn.o \
-	 objs/strformat.o
-CFLAGS=-Wall -Wextra -g
-LDFLAGS=
+	 objs/strformat.o \
+	 objs/curses.o
+CFLAGS=-Wall -Wextra -g `pkg-config --cflags ncurses`
+LDFLAGS=`pkg-config --libs ncurses`
 PROG=list.out
 CC=gcc
 
