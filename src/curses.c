@@ -10,6 +10,7 @@
 /* Global ncurses variables. */
 static uint16_t _curses_term_width;
 static uint16_t _curses_term_height;
+static bool     _curses_colors;
 
 /* The list. */
 static size_t _curses_list_nb;
@@ -49,10 +50,13 @@ bool curses_init()
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
-    /* TODO Init colors */
-
     _curses_term_width  = COLS;
     _curses_term_height = LINES;
+
+    /* Initialising colors. */
+    _curses_colors = has_colors();
+    if(_curses_colors)
+        start_color();
 
     /* Initialising the list. */
     _curses_list_nb       = 0;
@@ -72,6 +76,12 @@ bool curses_init()
     _curses_top_bg     = COLOR_WHITE;
     _curses_bot_fg     = COLOR_BLACK;
     _curses_bot_bg     = COLOR_WHITE;
+
+    /* Initialising top (1), bottom (2), list(3) and cmd line (4) pairs. */
+    init_pair(1, _curses_top_fg, _curses_top_bg);
+    init_pair(2, _curses_bot_fg, _curses_bot_bg);
+    init_pair(3, COLOR_WHITE,    COLOR_BLACK);
+    init_pair(4, COLOR_WHITE,    COLOR_BLACK);
 
     /* Initialising the command line. */
     _curses_cmd_in     = false;
@@ -95,13 +105,7 @@ bool curses_end()
         free(_curses_top_str);
     if(_curses_bot_str)
         free(_curses_bot_str);
-    /* TODO clear colors */
     return true;
-}
-
-void curses_change_color(int c, uint8_t r, uint8_t g, uint8_t b)
-{
-    /* TODO */
 }
 
 void curses_draw()

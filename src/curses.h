@@ -13,9 +13,6 @@ bool curses_init();
 /* End the curses display. */
 bool curses_end();
 
-/* Change the definition of a color. */
-void curses_change_color(int c, uint8_t r, uint8_t g, uint8_t b);
-
 /* Draw the changes on screen. */
 void curses_draw();
 
