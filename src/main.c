@@ -1,7 +1,9 @@
 
 #include <stdio.h>
+#include <ncurses.h>
 #include "spawn.h"
 #include "strformat.h"
+#include "curses.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +15,11 @@ int main(int argc, char *argv[])
     size_t nb;
     if(argc < 2) {
         printf("Too few arguments.\n");
+        return 1;
+    }
+
+    if(!curses_init()) {
+        printf("Couldn't init curses.\n");
         return 1;
     }
 
@@ -45,9 +52,16 @@ int main(int argc, char *argv[])
         spawn_wait(sp);
     spawn_close(&sp);
 
+    curses_top_set("Top string, near the sky !!");
+    curses_bot_set("Underling.");
+
+    curses_draw();
+    getch();
+
     strformat_destroy(fmt);
     strformat_symbols_destroy(symbs);
 
+    curses_end();
     return 0;
 }
 

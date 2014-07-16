@@ -108,6 +108,24 @@ bool curses_end()
     return true;
 }
 
+static void _curses_draw_line(const char* text, unsigned int y, int cp)
+{
+    size_t i;
+    char* txt;
+
+    /* First fill the the bg with spaces. */
+    attron(COLOR_PAIR(cp));
+    for(i = 0; i < _curses_term_width; ++i)
+        mvaddch(y, i, ' ');
+
+    /* Print the text. */
+    txt = strdup(text);
+    if(strlen(txt) > _curses_term_width)
+        txt[_curses_term_width] = '\0';
+    mvprintw(y, 0, "%s", txt);
+    free(txt);
+}
+
 void curses_draw()
 {
     if(_curses_list_mustdraw) {
@@ -116,12 +134,12 @@ void curses_draw()
     }
 
     if(_curses_top_mustdraw) {
-        /* TODO */
+        _curses_draw_line(_curses_top_str, 0, 1);
         _curses_top_mustdraw = false;
     }
 
     if(_curses_bot_mustdraw) {
-        /* TODO */
+        _curses_draw_line(_curses_bot_str, _curses_term_height - 2, 2);
         _curses_cmd_mustdraw = false;
     }
 
