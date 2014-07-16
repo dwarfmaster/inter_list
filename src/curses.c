@@ -16,6 +16,7 @@ static bool     _curses_colors;
 static size_t _curses_list_nb;
 static size_t _curses_list_capacity;
 static char** _curses_list_lines;
+static size_t _curses_list_first;
 static size_t _curses_list_sel;
 static size_t _curses_list_offset;
 static int    _curses_list_color;
@@ -62,6 +63,7 @@ bool curses_init()
     _curses_list_nb       = 0;
     _curses_list_capacity = 10;
     _curses_list_sel      = 0;
+    _curses_list_first    = 0;
     _curses_list_offset   = 0;
     _curses_list_lines    = malloc(sizeof(char*) * 10);
     if(!_curses_list_lines)
@@ -77,11 +79,14 @@ bool curses_init()
     _curses_bot_fg     = COLOR_BLACK;
     _curses_bot_bg     = COLOR_WHITE;
 
-    /* Initialising top (1), bottom (2), list(3) and cmd line (4) pairs. */
+    /* Initialising top (1), bottom (2), cmd line(3), list sel (4) and list
+     * item (5).
+     */
     init_pair(1, _curses_top_fg, _curses_top_bg);
     init_pair(2, _curses_bot_fg, _curses_bot_bg);
     init_pair(3, COLOR_WHITE,    COLOR_BLACK);
     init_pair(4, COLOR_WHITE,    COLOR_BLACK);
+    init_pair(5, COLOR_BLACK,    COLOR_WHITE);
 
     /* Initialising the command line. */
     _curses_cmd_in     = false;
@@ -126,10 +131,40 @@ static void _curses_draw_line(const char* text, unsigned int y, int cp)
     free(txt);
 }
 
+static void _curses_list_draw()
+{
+    size_t i, id;
+    unsigned int lines;
+    unsigned int yoff;
+    int cp;
+
+    lines = _curses_term_height - 1
+        - (_curses_top_enable ? 1 : 0)
+        - (_curses_bot_enable ? 1 : 0);
+    if(_curses_list_first + lines >= _curses_list_nb)
+        lines = _curses_list_nb - _curses_list_first;
+
+    yoff = (_curses_top_enable ? 1 : 0);
+    for(i = 0; i < lines; ++i) {
+        id = i + _curses_list_first;
+        if(id == _curses_list_sel)
+            cp = 4;
+        else
+            cp = 5;
+
+        if(strlen(_curses_list_lines[id]) <= _curses_list_offset)
+            _curses_draw_line("", yoff + i, cp);
+        else {
+            _curses_draw_line(_curses_list_lines[id] + _curses_list_offset,
+                    yoff + i, cp);
+        }
+    }
+}
+
 void curses_draw()
 {
     if(_curses_list_mustdraw) {
-        /* TODO */
+        _curses_list_draw();
         _curses_list_mustdraw = false;
     }
 
@@ -162,6 +197,7 @@ void curses_list_clear()
 {
     _curses_list_nb       = 0;
     _curses_list_sel      = 0;
+    _curses_list_first    = 0;
     _curses_list_offset   = 0;
     _curses_list_mustdraw = true;
 }

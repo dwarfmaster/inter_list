@@ -13,6 +13,14 @@ int main(int argc, char *argv[])
     strformat_symbs_t* symbs;
     strformat_t* fmt;
     size_t nb;
+    char* lines[] = {
+        "Hello world",
+        "Welcome",
+        "to the",
+        "BEST",
+        "list program ever",
+    };
+
     if(argc < 2) {
         printf("Too few arguments.\n");
         return 1;
@@ -54,6 +62,7 @@ int main(int argc, char *argv[])
 
     curses_top_set("Top string, near the sky !!");
     curses_bot_set("Underling.");
+    curses_list_add_lines(5, lines);
 
     curses_draw();
     getch();
