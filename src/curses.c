@@ -25,14 +25,10 @@ static bool   _curses_list_mustdraw;
 /* Top and bottom bars. */
 static bool  _curses_top_enable;
 static char* _curses_top_str;
-static int   _curses_top_fg;
-static int   _curses_top_bg;
 static bool  _curses_top_mustdraw;
 
 static bool  _curses_bot_enable;
 static char* _curses_bot_str;
-static int   _curses_bot_fg;
-static int   _curses_bot_bg;
 static bool  _curses_bot_mustdraw;
 
 /* Command line. */
@@ -74,19 +70,15 @@ bool curses_init()
     _curses_top_str    = NULL;
     _curses_bot_enable = false;
     _curses_bot_str    = NULL;
-    _curses_top_fg     = COLOR_BLACK;
-    _curses_top_bg     = COLOR_WHITE;
-    _curses_bot_fg     = COLOR_BLACK;
-    _curses_bot_bg     = COLOR_WHITE;
 
     /* Initialising top (1), bottom (2), cmd line(3), list sel (4) and list
      * item (5).
      */
-    init_pair(1, _curses_top_fg, _curses_top_bg);
-    init_pair(2, _curses_bot_fg, _curses_bot_bg);
-    init_pair(3, COLOR_WHITE,    COLOR_BLACK);
-    init_pair(4, COLOR_WHITE,    COLOR_BLACK);
-    init_pair(5, COLOR_BLACK,    COLOR_WHITE);
+    init_pair(1, COLOR_BLACK, COLOR_WHITE);
+    init_pair(2, COLOR_BLACK, COLOR_WHITE);
+    init_pair(3, COLOR_WHITE, COLOR_BLACK);
+    init_pair(4, COLOR_BLACK, COLOR_WHITE);
+    init_pair(5, COLOR_WHITE, COLOR_BLACK);
 
     /* Initialising the command line. */
     _curses_cmd_in     = false;
@@ -336,15 +328,13 @@ bool curses_bot_set(const char* str)
 
 void curses_top_colors(int fg, int bg)
 {
-    _curses_top_fg       = fg;
-    _curses_top_bg       = bg;
+    init_pair(1, fg, bg);
     _curses_top_mustdraw = true;
 }
 
 void curses_bot_colors(int fg, int bg)
 {
-    _curses_bot_fg       = fg;
-    _curses_bot_bg       = bg;
+    init_pair(2, fg, bg);
     _curses_bot_mustdraw = true;
 }
 

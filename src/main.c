@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
 
     curses_top_set("Top string, near the sky !!");
     curses_bot_set("Underling.");
+    curses_top_colors(COLOR_WHITE, COLOR_BLUE);
+    curses_bot_colors(COLOR_BLACK, COLOR_GREEN);
     curses_list_add_lines(5, lines);
 
     curses_draw();
