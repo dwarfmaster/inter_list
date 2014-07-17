@@ -34,7 +34,6 @@ static bool  _curses_bot_mustdraw;
 static bool        _curses_cmd_in;
 static const char* _curses_cmd_prefix;
 static char        _curses_cmd_text[CURSES_TEXT_LENGTH];
-static size_t      _curses_cmd_size;
 static size_t      _curses_cmd_pos;
 static bool        _curses_cmd_mustdraw;
 
@@ -434,7 +433,6 @@ void curses_command_enter(const char* prefix)
     _curses_cmd_in       = true;
     _curses_cmd_prefix   = prefix;
     _curses_cmd_text[0]  = '\0';
-    _curses_cmd_size     = 0;
     _curses_cmd_pos      = 0;
     _curses_cmd_mustdraw = true;
 }
@@ -450,11 +448,12 @@ const char* curses_command_leave()
 
 bool curses_command_parse_event(int c)
 {
+    size_t pos;
     if(isprint(c)) {
         if(_curses_cmd_pos == strlen(_curses_cmd_text)) {
-            _curses_cmd_text[_curses_cmd_size] = (char)c;
-            ++_curses_cmd_size;
-            _curses_cmd_text[_curses_cmd_size] = '\0';
+            pos = strlen(_curses_cmd_text);
+            _curses_cmd_text[pos] = (char)c;
+            _curses_cmd_text[pos + 1] = '\0';
         }
         else {
             memmove(_curses_cmd_text + _curses_cmd_pos + 1,
@@ -482,6 +481,21 @@ bool curses_command_parse_event(int c)
     }
     else if(c == KEY_DOWN) {
         _curses_cmd_pos = strlen(_curses_cmd_text);
+        _curses_cmd_mustdraw = true;
+    }
+    else if(c == KEY_BACKSPACE) {
+        if(_curses_cmd_pos == 0)
+            return true;
+        if(_curses_cmd_pos == strlen(_curses_cmd_text)) {
+            pos = strlen(_curses_cmd_text) - 1;
+            _curses_cmd_text[pos] = '\0';
+        }
+        else {
+            memmove(_curses_cmd_text + _curses_cmd_pos - 1,
+                    _curses_cmd_text + _curses_cmd_pos,
+                    strlen(_curses_cmd_text) - _curses_cmd_pos + 1);
+        }
+        --_curses_cmd_pos;
         _curses_cmd_mustdraw = true;
     }
     else if(c == '\n')
