@@ -13,14 +13,14 @@ static uint16_t _curses_term_height;
 static bool     _curses_colors;
 
 /* The list. */
-static size_t _curses_list_nb;
-static size_t _curses_list_capacity;
-static char** _curses_list_lines;
-static size_t _curses_list_first;
-static size_t _curses_list_sel;
-static size_t _curses_list_offset;
-static int    _curses_list_color;
-static bool   _curses_list_mustdraw;
+static size_t       _curses_list_nb;
+static size_t       _curses_list_capacity;
+static const char** _curses_list_lines;
+static size_t       _curses_list_first;
+static size_t       _curses_list_sel;
+static size_t       _curses_list_offset;
+static int          _curses_list_color;
+static bool         _curses_list_mustdraw;
 
 /* Top and bottom bars. */
 static bool  _curses_top_enable;
@@ -194,13 +194,13 @@ void curses_list_clear()
     _curses_list_mustdraw = true;
 }
 
-bool curses_list_add_lines(size_t nb, char** lines)
+bool curses_list_add_lines(size_t nb, const char** lines)
 {
     size_t nsize = _curses_list_nb + nb;
     size_t ncapa;
     size_t i;
     void* temp;
-    char* str;
+    const char* str;
 
     if(nsize >= _curses_list_capacity) {
         /* ((nsize + 9) / 10) is ceil(nsize / 10) */

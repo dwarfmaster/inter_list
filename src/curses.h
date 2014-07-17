@@ -26,7 +26,7 @@ void curses_list_clear();
 /* Add lines to the list. The lines won't be copied, so the given ones mustn't
  * be free'd by the caller.
  */
-bool curses_list_add_lines(size_t nb, char** lines);
+bool curses_list_add_lines(size_t nb, const char** lines);
 
 /* Move the selection downward by nb steps. Returns false if it reached the
  * end.
