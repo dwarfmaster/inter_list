@@ -180,8 +180,12 @@ static void _curses_list_draw()
 static void _curses_cmd_draw()
 {
     char buffer[CURSES_TEXT_LENGTH];
-    snprintf(buffer, CURSES_TEXT_LENGTH, "%s%s",
-            _curses_cmd_prefix, _curses_cmd_text);
+    if(!_curses_cmd_in)
+        buffer[0] = '\0';
+    else {
+        snprintf(buffer, CURSES_TEXT_LENGTH, "%s%s",
+                _curses_cmd_prefix, _curses_cmd_text);
+    }
     _curses_draw_line(buffer, _curses_term_height - 1, COLOR_CMD);
 }
 
@@ -199,7 +203,7 @@ void curses_draw()
 
     if(_curses_bot_mustdraw) {
         _curses_draw_line(_curses_bot_str, _curses_term_height - 2, COLOR_BOT);
-        _curses_cmd_mustdraw = false;
+        _curses_bot_mustdraw = false;
     }
 
     if(_curses_cmd_mustdraw) {
@@ -419,10 +423,11 @@ void curses_bot_colors(int fg, int bg)
 
 void curses_command_enter(const char* prefix)
 {
-    _curses_cmd_in      = true;
-    _curses_cmd_prefix  = prefix;
-    _curses_cmd_text[0] = '\0';
-    _curses_cmd_pos     = 0;
+    _curses_cmd_in       = true;
+    _curses_cmd_prefix   = prefix;
+    _curses_cmd_text[0]  = '\0';
+    _curses_cmd_pos      = 0;
+    _curses_cmd_mustdraw = true;
 }
 
 const char* curses_command_leave()
