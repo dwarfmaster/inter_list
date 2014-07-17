@@ -34,6 +34,7 @@ static bool  _curses_bot_mustdraw;
 static bool        _curses_cmd_in;
 static const char* _curses_cmd_prefix;
 static char        _curses_cmd_text[CURSES_TEXT_LENGTH];
+static size_t      _curses_cmd_size;
 static size_t      _curses_cmd_pos;
 static bool        _curses_cmd_mustdraw;
 
@@ -211,7 +212,14 @@ void curses_draw()
         _curses_cmd_mustdraw = false;
     }
 
-    move(_curses_term_height - 1, 0);
+    /* Placing the cursor. */
+    if(!_curses_cmd_in)
+        move(_curses_term_height - 1, 0);
+    else {
+        move(_curses_term_height - 1,
+                strlen(_curses_cmd_prefix) + _curses_cmd_pos);
+    }
+
     refresh();
 }
 
@@ -426,6 +434,7 @@ void curses_command_enter(const char* prefix)
     _curses_cmd_in       = true;
     _curses_cmd_prefix   = prefix;
     _curses_cmd_text[0]  = '\0';
+    _curses_cmd_size     = 0;
     _curses_cmd_pos      = 0;
     _curses_cmd_mustdraw = true;
 }
@@ -439,18 +448,44 @@ const char* curses_command_leave()
     return _curses_cmd_text;
 }
 
-bool curses_command_parse_event(char c)
+bool curses_command_parse_event(int c)
 {
     if(isprint(c)) {
-        _curses_cmd_text[_curses_cmd_pos] = c;
+        if(_curses_cmd_pos == strlen(_curses_cmd_text)) {
+            _curses_cmd_text[_curses_cmd_size] = (char)c;
+            ++_curses_cmd_size;
+            _curses_cmd_text[_curses_cmd_size] = '\0';
+        }
+        else {
+            memmove(_curses_cmd_text + _curses_cmd_pos + 1,
+                    _curses_cmd_text + _curses_cmd_pos,
+                    strlen(_curses_cmd_text) - _curses_cmd_pos + 1);
+            _curses_cmd_text[_curses_cmd_pos] = (char)c;
+        }
         ++_curses_cmd_pos;
-        _curses_cmd_text[_curses_cmd_pos] = '\0';
         _curses_cmd_mustdraw = true;
-        return true;
+    }
+
+    else if(c == KEY_LEFT) {
+        if(_curses_cmd_pos > 0)
+            --_curses_cmd_pos;
+        _curses_cmd_mustdraw = true;
+    }
+    else if(c == KEY_RIGHT) {
+        if(_curses_cmd_pos < strlen(_curses_cmd_text))
+            ++_curses_cmd_pos;
+        _curses_cmd_mustdraw = true;
+    }
+    else if(c == KEY_UP) {
+        _curses_cmd_pos = 0;
+        _curses_cmd_mustdraw = true;
+    }
+    else if(c == KEY_DOWN) {
+        _curses_cmd_pos = strlen(_curses_cmd_text);
+        _curses_cmd_mustdraw = true;
     }
     else if(c == '\n')
         return false;
-    else
-        return true;
+    return true;
 }
 

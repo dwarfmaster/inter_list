@@ -84,7 +84,7 @@ const char* curses_command_leave();
 /* Parse an event. Returns false if the command line must be left.
  * TODO handle utf8
  */
-bool curses_command_parse_event(char c);
+bool curses_command_parse_event(int c);
 
 #endif
 

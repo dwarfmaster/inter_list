@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     strformat_t* fmt;
     size_t nb;
     size_t i;
-    char c;
+    int c;
     bool incmd = false;
     bool cont = true;
 
