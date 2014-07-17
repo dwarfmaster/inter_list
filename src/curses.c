@@ -177,6 +177,14 @@ static void _curses_list_draw()
     }
 }
 
+static void _curses_cmd_draw()
+{
+    char buffer[CURSES_TEXT_LENGTH];
+    snprintf(buffer, CURSES_TEXT_LENGTH, "%s%s",
+            _curses_cmd_prefix, _curses_cmd_text);
+    _curses_draw_line(buffer, _curses_term_height - 1, COLOR_CMD);
+}
+
 void curses_draw()
 {
     if(_curses_list_mustdraw) {
@@ -185,17 +193,17 @@ void curses_draw()
     }
 
     if(_curses_top_mustdraw) {
-        _curses_draw_line(_curses_top_str, 0, 1);
+        _curses_draw_line(_curses_top_str, 0, COLOR_TOP);
         _curses_top_mustdraw = false;
     }
 
     if(_curses_bot_mustdraw) {
-        _curses_draw_line(_curses_bot_str, _curses_term_height - 2, 2);
+        _curses_draw_line(_curses_bot_str, _curses_term_height - 2, COLOR_BOT);
         _curses_cmd_mustdraw = false;
     }
 
     if(_curses_cmd_mustdraw) {
-        /* TODO */
+        _curses_cmd_draw();
         _curses_cmd_mustdraw = false;
     }
 
