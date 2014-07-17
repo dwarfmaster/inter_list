@@ -197,19 +197,27 @@ void curses_list_clear()
 bool curses_list_add_lines(size_t nb, char** lines)
 {
     size_t nsize = _curses_list_nb + nb;
-    size_t ncapa = _curses_list_capacity;
+    size_t ncapa;
     size_t i;
+    void* temp;
+    char* str;
 
     if(nsize >= _curses_list_capacity) {
-        ncapa = 10 * (nsize + 9) / 10; /* (nsize + 9) / 10 is ceil(nsize/10) */
-        _curses_list_lines = realloc(_curses_list_lines, ncapa);
-        if(!_curses_list_lines)
+        /* ((nsize + 9) / 10) is ceil(nsize / 10) */
+        ncapa = 10 * ((nsize + 9) / 10) + 10;
+        temp = realloc(_curses_list_lines, ncapa);
+        if(!temp)
             return false;
+        _curses_list_lines = temp;
         _curses_list_capacity = ncapa;
     }
 
-    for(i = 0; i < nb; ++i)
-        _curses_list_lines[_curses_list_nb + i] = lines[i];
+    for(i = 0; i < nb; ++i) {
+        fprintf(stderr, "Reading %li [%li/%li].\n", i, _curses_list_nb + i,
+                _curses_list_capacity);
+        str = lines[i];
+        _curses_list_lines[_curses_list_nb + i] = str;
+    }
     _curses_list_nb = nsize;
 
     /* TODO draw new lines if necessary */
