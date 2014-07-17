@@ -175,6 +175,7 @@ void curses_draw()
         _curses_cmd_mustdraw = false;
     }
 
+    move(_curses_term_height - 1, 0);
     refresh();
 }
 
