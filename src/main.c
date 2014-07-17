@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     size_t i;
     char c;
     bool incmd = false;
+    bool cont = true;
 
     if(argc < 2) {
         printf("Too few arguments.\n");
@@ -85,12 +86,15 @@ int main(int argc, char *argv[])
     curses_list_colors_sel(COLOR_RED, COLOR_YELLOW);
 
     curses_draw();
-    while((c = getch()) != 'q') {
+    while(cont) {
+        c = getch();
         if(incmd) {
             incmd = curses_command_parse_event(c);
             if(!incmd) {
                 lines[nb] = strdup(curses_command_leave());
                 curses_list_add_lines(1, lines + nb);
+                if(strcmp(lines[nb], "quit") == 0)
+                    cont = false;
                 ++nb;
             }
         }
