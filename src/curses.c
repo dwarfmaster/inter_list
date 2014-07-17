@@ -123,6 +123,13 @@ static void _curses_draw_line(const char* text, unsigned int y, int cp)
     free(txt);
 }
 
+static unsigned int _curses_list_height()
+{
+    return _curses_term_height - 1
+        - (_curses_top_enable ? 1 : 0)
+        - (_curses_bot_enable ? 1 : 0);
+}
+
 static void _curses_list_draw()
 {
     size_t i, id;
@@ -130,9 +137,7 @@ static void _curses_list_draw()
     unsigned int yoff;
     int cp;
 
-    lines = _curses_term_height - 1
-        - (_curses_top_enable ? 1 : 0)
-        - (_curses_bot_enable ? 1 : 0);
+    lines = _curses_list_height();
     if(_curses_list_first + lines >= _curses_list_nb)
         lines = _curses_list_nb - _curses_list_first;
 
@@ -198,6 +203,7 @@ void curses_list_clear()
 bool curses_list_add_lines(size_t nb, const char** lines)
 {
     size_t nsize = _curses_list_nb + nb;
+    size_t savenb = _curses_list_nb;
     size_t ncapa;
     size_t i;
     void* temp;
@@ -216,30 +222,70 @@ bool curses_list_add_lines(size_t nb, const char** lines)
         _curses_list_lines[_curses_list_nb + i] = lines[i];
     _curses_list_nb = nsize;
 
-    /* TODO draw new lines if necessary */
+    if(savenb < _curses_list_height())
+        _curses_list_mustdraw = true;
     return true;
+}
+
+static bool _curses_list_isin(unsigned int pos)
+{
+    return (pos >= _curses_list_first
+            && pos < _curses_list_first + _curses_list_height());
 }
 
 bool curses_list_down(unsigned int nb)
 {
-    /* TODO drawing. */
+    size_t savesel = _curses_list_sel;
+    bool ret = true;
     _curses_list_sel += nb;
     if(_curses_list_sel >= _curses_list_nb) {
         _curses_list_sel = _curses_list_nb - 1;
-        return false;
+        ret = false;
     }
-    return true;
+
+    if(_curses_list_isin(_curses_list_sel)) {
+        _curses_draw_line(_curses_list_lines[savesel], 
+                savesel - _curses_list_first + (_curses_top_enable ? 1 : 0),
+                5);
+        _curses_draw_line(_curses_list_lines[_curses_list_sel], 
+                _curses_list_sel - _curses_list_first
+                + (_curses_top_enable ? 1 : 0),
+                4);
+    } else {
+        if(_curses_list_height() <= _curses_list_sel)
+            _curses_list_first = _curses_list_sel - _curses_list_height() + 1;
+        else
+            _curses_list_first = 0;
+        _curses_list_mustdraw = true;
+    }
+
+    return ret;
 }
 
 bool curses_list_up(unsigned int nb)
 {
-    /* TODO drawing. */
+    size_t savesel = _curses_list_sel;
+    bool ret = true;
     if(_curses_list_sel < nb) {
         _curses_list_sel = 0;
-        return false;
+        ret = false;
     }
-    _curses_list_sel -= nb;
-    return true;
+    else
+        _curses_list_sel -= nb;
+
+    if(_curses_list_isin(_curses_list_sel)) {
+        _curses_draw_line(_curses_list_lines[savesel], 
+                savesel - _curses_list_first + (_curses_top_enable ? 1 : 0),
+                5);
+        _curses_draw_line(_curses_list_lines[_curses_list_sel], 
+                _curses_list_sel - _curses_list_first
+                + (_curses_top_enable ? 1 : 0),
+                4);
+    } else {
+        _curses_list_first = _curses_list_sel;
+        _curses_list_mustdraw = true;
+    }
+    return ret;
 }
 
 size_t curses_list_get()
@@ -249,10 +295,29 @@ size_t curses_list_get()
 
 bool curses_list_set(size_t nb)
 {
-    /* TODO drawing. */
+    size_t savesel = _curses_list_sel;
+    size_t off;
     if(nb >= _curses_list_nb)
         return false;
     _curses_list_sel = nb;
+    
+    if(_curses_list_isin(_curses_list_sel)) {
+        _curses_draw_line(_curses_list_lines[savesel], 
+                savesel - _curses_list_first + (_curses_top_enable ? 1 : 0),
+                5);
+        _curses_draw_line(_curses_list_lines[_curses_list_sel], 
+                _curses_list_sel - _curses_list_first
+                + (_curses_top_enable ? 1 : 0),
+                4);
+    } else {
+        off = _curses_list_height() / 2;
+        if(off < _curses_list_first)
+            _curses_list_first = _curses_list_sel - off;
+        else
+            _curses_list_first = 0;
+        _curses_list_mustdraw = true;
+    }
+
     return true;
 }
 

@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
     strformat_t* fmt;
     size_t nb;
     size_t i;
+    char c;
 
     if(argc < 2) {
         printf("Too few arguments.\n");
@@ -81,7 +82,13 @@ int main(int argc, char *argv[])
     curses_bot_colors(COLOR_BLACK, COLOR_GREEN);
 
     curses_draw();
-    getch();
+    while((c = getch()) != 'q') {
+        if(c == 'i')
+            curses_list_up(1);
+        else if(c == 'k')
+            curses_list_down(1);
+        curses_draw();
+    }
 
     strformat_destroy(fmt);
     strformat_symbols_destroy(symbs);
