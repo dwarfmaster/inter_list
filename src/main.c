@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <ncurses.h>
+#include <stdlib.h>
 #include "spawn.h"
 #include "strformat.h"
 #include "curses.h"
@@ -8,26 +9,18 @@
 int main(int argc, char *argv[])
 {
     spawn_t sp;
+    char spawnmsg[256];
     char buffer[256];
+    const char* lines[2048];
+    char* line;
     size_t rd;
     strformat_symbs_t* symbs;
     strformat_t* fmt;
     size_t nb;
-    char* lines[] = {
-        "Hello world",
-        "Welcome",
-        "to the",
-        "BEST",
-        "list program ever",
-    };
+    size_t i;
 
     if(argc < 2) {
         printf("Too few arguments.\n");
-        return 1;
-    }
-
-    if(!curses_init()) {
-        printf("Couldn't init curses.\n");
         return 1;
     }
 
@@ -46,15 +39,37 @@ int main(int argc, char *argv[])
     }
 
     nb = 0;
-    while((rd = spawn_read(sp, buffer, 256)) > 0) {
-        ++nb;
-        buffer[rd] = '\0';
-        strformat_set(symbs, 's', buffer);
-        sprintf(buffer, "%li", nb);
-        strformat_set(symbs, 'n', buffer);
+    while((rd = spawn_read(sp, spawnmsg, 255)) > 0) {
+        spawnmsg[rd] = '\0';
 
-        printf("%s\n", strformat_get(fmt));
+        line = strtok(spawnmsg, "\n");
+        while(line) {
+            strformat_set(symbs, 's', line);
+            sprintf(buffer, "%li", nb + 1);
+            strformat_set(symbs, 'n', buffer);
+
+            sprintf(buffer, "%s", strformat_get(fmt));
+            line = strdup(buffer);
+            if(line) {
+                lines[nb] = line;
+                ++nb;
+
+                if(nb >= 2048) {
+                    printf("Overflow !\n");
+                    return 1;
+                }
+            }
+
+            line = strtok(NULL, "\n");
+        }
     }
+
+    if(!curses_init()) {
+        printf("Couldn't init curses.\n");
+        return 1;
+    }
+
+    curses_list_add_lines(nb, lines);
 
     if(!spawn_ended(sp))
         spawn_wait(sp);
@@ -64,13 +79,15 @@ int main(int argc, char *argv[])
     curses_bot_set("Underling.");
     curses_top_colors(COLOR_WHITE, COLOR_BLUE);
     curses_bot_colors(COLOR_BLACK, COLOR_GREEN);
-    curses_list_add_lines(5, lines);
 
     curses_draw();
     getch();
 
     strformat_destroy(fmt);
     strformat_symbols_destroy(symbs);
+
+    for(i = 0; i < nb; ++i)
+        free((char*)lines[i]);
 
     curses_end();
     return 0;
