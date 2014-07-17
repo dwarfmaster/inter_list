@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     size_t nb;
     size_t i;
     char c;
+    bool incmd = false;
 
     if(argc < 2) {
         printf("Too few arguments.\n");
@@ -85,14 +86,28 @@ int main(int argc, char *argv[])
 
     curses_draw();
     while((c = getch()) != 'q') {
-        if(c == 'i')
-            curses_list_up(1);
-        else if(c == 'k')
-            curses_list_down(1);
-        else if(c == 'l')
-            curses_list_right(1);
-        else if(c == 'j')
-            curses_list_left(1);
+        if(incmd) {
+            incmd = curses_command_parse_event(c);
+            if(!incmd) {
+                lines[nb] = strdup(curses_command_leave());
+                curses_list_add_lines(1, lines + nb);
+                ++nb;
+            }
+        }
+        else {
+            if(c == 'i')
+                curses_list_up(1);
+            else if(c == 'k')
+                curses_list_down(1);
+            else if(c == 'l')
+                curses_list_right(1);
+            else if(c == 'j')
+                curses_list_left(1);
+            else if(c == ':') {
+                curses_command_enter("Command : ");
+                incmd = true;
+            }
+        }
         curses_draw();
     }
 
