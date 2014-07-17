@@ -89,6 +89,10 @@ int main(int argc, char *argv[])
             curses_list_up(1);
         else if(c == 'k')
             curses_list_down(1);
+        else if(c == 'l')
+            curses_list_right(1);
+        else if(c == 'j')
+            curses_list_left(1);
         curses_draw();
     }
 
