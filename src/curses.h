@@ -17,8 +17,11 @@ bool curses_end();
 void curses_draw();
 
 /********************* List handling abilities *******************************/
-/* Define the color of the background for the selected entry in the list. */
-void curses_list_color(int c);
+/* Define the colors for the list. */
+void curses_list_colors(int fg, int bg);
+
+/* Define the colors for the selected entry of the list. */
+void curses_list_colors_sel(int fg, int bg);
 
 /* Clear the list. */
 void curses_list_clear();

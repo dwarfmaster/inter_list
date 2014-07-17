@@ -19,7 +19,6 @@ static const char** _curses_list_lines;
 static size_t       _curses_list_first;
 static size_t       _curses_list_sel;
 static size_t       _curses_list_offset;
-static int          _curses_list_color;
 static bool         _curses_list_mustdraw;
 
 /* Top and bottom bars. */
@@ -37,6 +36,15 @@ static const char* _curses_cmd_prefix;
 static char        _curses_cmd_text[CURSES_TEXT_LENGTH];
 static size_t      _curses_cmd_pos;
 static bool        _curses_cmd_mustdraw;
+
+/* The colors pairs. */
+enum {
+    COLOR_TOP = 1,
+    COLOR_BOT = 2,
+    COLOR_CMD = 3,
+    COLOR_SEL = 4,
+    COLOR_LST = 5
+};
 
 /********************* Generic Ncurses abilities *****************************/
 bool curses_init()
@@ -71,14 +79,12 @@ bool curses_init()
     _curses_bot_enable = false;
     _curses_bot_str    = NULL;
 
-    /* Initialising top (1), bottom (2), cmd line(3), list sel (4) and list
-     * item (5).
-     */
-    init_pair(1, COLOR_BLACK, COLOR_WHITE);
-    init_pair(2, COLOR_BLACK, COLOR_WHITE);
-    init_pair(3, COLOR_WHITE, COLOR_BLACK);
-    init_pair(4, COLOR_BLACK, COLOR_WHITE);
-    init_pair(5, COLOR_WHITE, COLOR_BLACK);
+    /* Initialising color pairs. */
+    init_pair(COLOR_TOP, COLOR_BLACK, COLOR_WHITE);
+    init_pair(COLOR_BOT, COLOR_BLACK, COLOR_WHITE);
+    init_pair(COLOR_CMD, COLOR_WHITE, COLOR_BLACK);
+    init_pair(COLOR_SEL, COLOR_BLACK, COLOR_WHITE);
+    init_pair(COLOR_LST, COLOR_WHITE, COLOR_BLACK);
 
     /* Initialising the command line. */
     _curses_cmd_in     = false;
@@ -145,9 +151,9 @@ static void _curses_list_draw()
     for(i = 0; i < lines; ++i) {
         id = i + _curses_list_first;
         if(id == _curses_list_sel)
-            cp = 4;
+            cp = COLOR_SEL;
         else
-            cp = 5;
+            cp = COLOR_LST;
 
         if(strlen(_curses_list_lines[id]) <= _curses_list_offset)
             _curses_draw_line("", yoff + i, cp);
@@ -185,10 +191,14 @@ void curses_draw()
 }
 
 /********************* List handling abilities *******************************/
-void curses_list_color(int c)
+void curses_list_colors(int fg, int bg)
 {
-    _curses_list_color = c;
-    /* TODO redraw selected line. */
+    init_pair(COLOR_LST, fg, bg);
+}
+
+void curses_list_colors_sel(int fg, int bg)
+{
+    init_pair(COLOR_SEL, fg, bg);
 }
 
 void curses_list_clear()
@@ -246,11 +256,11 @@ bool curses_list_down(unsigned int nb)
     if(_curses_list_isin(_curses_list_sel)) {
         _curses_draw_line(_curses_list_lines[savesel], 
                 savesel - _curses_list_first + (_curses_top_enable ? 1 : 0),
-                5);
+                COLOR_LST);
         _curses_draw_line(_curses_list_lines[_curses_list_sel], 
                 _curses_list_sel - _curses_list_first
                 + (_curses_top_enable ? 1 : 0),
-                4);
+                COLOR_SEL);
     } else {
         if(_curses_list_height() <= _curses_list_sel)
             _curses_list_first = _curses_list_sel - _curses_list_height() + 1;
@@ -276,11 +286,11 @@ bool curses_list_up(unsigned int nb)
     if(_curses_list_isin(_curses_list_sel)) {
         _curses_draw_line(_curses_list_lines[savesel], 
                 savesel - _curses_list_first + (_curses_top_enable ? 1 : 0),
-                5);
+                COLOR_LST);
         _curses_draw_line(_curses_list_lines[_curses_list_sel], 
                 _curses_list_sel - _curses_list_first
                 + (_curses_top_enable ? 1 : 0),
-                4);
+                COLOR_SEL);
     } else {
         _curses_list_first = _curses_list_sel;
         _curses_list_mustdraw = true;
@@ -304,11 +314,11 @@ bool curses_list_set(size_t nb)
     if(_curses_list_isin(_curses_list_sel)) {
         _curses_draw_line(_curses_list_lines[savesel], 
                 savesel - _curses_list_first + (_curses_top_enable ? 1 : 0),
-                5);
+                COLOR_LST);
         _curses_draw_line(_curses_list_lines[_curses_list_sel], 
                 _curses_list_sel - _curses_list_first
                 + (_curses_top_enable ? 1 : 0),
-                4);
+                COLOR_SEL);
     } else {
         off = _curses_list_height() / 2;
         if(off < _curses_list_first)
