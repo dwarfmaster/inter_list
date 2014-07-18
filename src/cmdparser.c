@@ -66,7 +66,7 @@ bool cmdparser_add_command(const char* name,
 
     /* Insert it. */
     id = 0;
-    while(id < _cmdparser_nb && strcmp(_cmdparser_cmds[id++].name, name) < 0);
+    while(id < _cmdparser_nb && strcmp(_cmdparser_cmds[id].name, name) < 0) ++id;
     cmd.name = name;
     cmd.cb   = cb;
     cmd.data = data;
@@ -77,13 +77,28 @@ bool cmdparser_add_command(const char* name,
 
 struct _cmdparser_command_t* _cmdparser_find(const char* name)
 {
-    /* TODO use dichotomia. */
-    size_t i;
-    for(i = 0; i < _cmdparser_nb; ++i) {
-        if(strcmp(_cmdparser_cmds[i].name, name) == 0)
-            return &_cmdparser_cmds[i];
+    size_t max, min, guess;
+    int cmp;
+    min = 0;
+    max = _cmdparser_nb - 1;
+
+    while(max - min > 1) {
+        guess = (max + min) / 2;
+        cmp = strcmp(_cmdparser_cmds[guess].name, name);
+        if(cmp == 0)
+            return &_cmdparser_cmds[guess];
+        else if(cmp < 0)
+            min = guess;
+        else
+            max = guess;
     }
-    return NULL;
+
+    if(strcmp(_cmdparser_cmds[min].name, name) == 0)
+        return &_cmdparser_cmds[min];
+    else if(strcmp(_cmdparser_cmds[max].name, name) == 0)
+        return &_cmdparser_cmds[max];
+    else
+        return NULL;
 }
 
 bool cmdparser_set_data(const char* name, void* data)
