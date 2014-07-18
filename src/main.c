@@ -5,6 +5,45 @@
 #include "spawn.h"
 #include "strformat.h"
 #include "curses.h"
+#include "cmdparser.h"
+
+static void _cb_up(const char* str, void* data) {
+    unsigned int up = 1;
+    if(data) { } /* avoid warnings */
+    if(str)
+        sscanf(str, "%u", &up);
+    curses_list_up(up);
+}
+
+static void _cb_down(const char* str, void* data) {
+    unsigned int down = 1;
+    if(data) { } /* avoid warnings */
+    if(str)
+        sscanf(str, "%u", &down);
+    curses_list_down(down);
+}
+
+static void _cb_left(const char* str, void* data) {
+    unsigned int left = 1;
+    if(data) { } /* avoid warnings */
+    if(str)
+        sscanf(str, "%u", &left);
+    curses_list_left(left);
+}
+
+static void _cb_right(const char* str, void* data) {
+    unsigned int right = 1;
+    if(data) { } /* avoid warnings */
+    if(str)
+        sscanf(str, "%u", &right);
+    curses_list_right(right);
+}
+
+static void _cb_quit(const char* str, void* data) {
+    if(str) { } /* avoid warnings */
+    bool* cont = data;
+    *cont = false;
+}
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +52,7 @@ int main(int argc, char *argv[])
     char buffer[256];
     const char* lines[2048];
     char* line;
+    const char* command;
     size_t rd;
     strformat_symbs_t* symbs;
     strformat_t* fmt;
@@ -67,16 +107,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    if(!spawn_ended(sp))
+        spawn_wait(sp);
+    spawn_close(&sp);
+
     if(!curses_init()) {
         printf("Couldn't init curses.\n");
         return 1;
     }
-
     curses_list_add_lines(nb, lines);
-
-    if(!spawn_ended(sp))
-        spawn_wait(sp);
-    spawn_close(&sp);
 
     curses_top_set("Top string, near the sky !!");
     curses_bot_set("Underling.");
@@ -85,17 +124,26 @@ int main(int argc, char *argv[])
     curses_list_colors(COLOR_CYAN, COLOR_BLACK);
     curses_list_colors_sel(COLOR_RED, COLOR_YELLOW);
 
+    if(!cmdparser_init()) {
+        printf("Couldn't init cmdparse.\n");
+        return 1;
+    }
+
+    cmdparser_add_command("up",    &_cb_up,    NULL);
+    cmdparser_add_command("down",  &_cb_down,  NULL);
+    cmdparser_add_command("right", &_cb_right, NULL);
+    cmdparser_add_command("left",  &_cb_left,  NULL);
+    cmdparser_add_command("quit",  &_cb_quit,  &cont);
+
     curses_draw();
     while(cont) {
         c = getch();
         if(incmd) {
             incmd = curses_command_parse_event(c);
             if(!incmd) {
-                lines[nb] = strdup(curses_command_leave());
-                curses_list_add_lines(1, lines + nb);
-                if(strcmp(lines[nb], "quit") == 0)
-                    cont = false;
-                ++nb;
+                command = curses_command_leave();
+                if(!cmdparser_parse(command))
+                    fprintf(stderr, "Couldn't parse \"%s\".\n", command);
             }
         }
         else {
@@ -121,6 +169,7 @@ int main(int argc, char *argv[])
     for(i = 0; i < nb; ++i)
         free((char*)lines[i]);
 
+    cmdparser_quit();
     curses_end();
     return 0;
 }
