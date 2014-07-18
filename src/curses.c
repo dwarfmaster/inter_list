@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 #include <ncurses.h>
 
 #define CURSES_TEXT_LENGTH 512
@@ -10,6 +13,7 @@
 /* Global ncurses variables. */
 static uint16_t _curses_term_width;
 static uint16_t _curses_term_height;
+static bool     _curses_term_resized;
 static bool     _curses_colors;
 
 /* The list. */
@@ -47,16 +51,32 @@ enum {
 };
 
 /********************* Generic Ncurses abilities *****************************/
-bool curses_init()
+/* Handler for terminal resize. */
+static void _curses_term_resize(int sig)
 {
-    /* Initialising ncurses. */
+    if(sig) { } /* avoid warnings. */
+    _curses_term_resized = true;
+}
+
+static bool _curses_init_ncurses()
+{
     if(!initscr())
         return false;
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
-    _curses_term_width  = COLS;
-    _curses_term_height = LINES;
+    _curses_term_width   = COLS;
+    _curses_term_height  = LINES;
+    _curses_term_resized = false;
+    return true;
+}
+
+bool curses_init()
+{
+    /* Initialising ncurses. */
+    if(!_curses_init_ncurses())
+        return false;
+    signal(SIGWINCH, _curses_term_resize);
 
     /* Initialising colors. */
     _curses_colors = has_colors();
@@ -189,8 +209,29 @@ static void _curses_cmd_draw()
     _curses_draw_line(buffer, _curses_term_height - 1, COLOR_CMD);
 }
 
+static bool _curses_term_apply_resize()
+{
+    struct winsize winsz;
+    ioctl(0, TIOCGWINSZ, &winsz);
+
+    _curses_term_width  = winsz.ws_col;
+    _curses_term_height = winsz.ws_row;
+    resizeterm(_curses_term_height, _curses_term_width);
+
+    endwin();
+    return _curses_init_ncurses();
+}
+
 void curses_draw()
 {
+    if(_curses_term_resized) {
+        _curses_term_apply_resize();
+        _curses_list_mustdraw = true;
+        _curses_top_mustdraw  = true;
+        _curses_bot_mustdraw  = true;
+        _curses_cmd_mustdraw  = true;
+    }
+
     if(_curses_list_mustdraw) {
         _curses_list_draw();
         _curses_list_mustdraw = false;
