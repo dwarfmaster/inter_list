@@ -24,6 +24,7 @@ void events_clear();
  *  - abc<Cmd :> : the event is the same as before, but when triggered a prompt
  *                 is opened to query a string from the user.
  * If action contain %s, it will be replaced by the string queried to the user.
+ * The string will be deduplicated, they don't need to remain valid afterward.
  */
 bool events_add(const char* ev, const char* action);
 
