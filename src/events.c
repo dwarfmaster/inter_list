@@ -1,8 +1,11 @@
 
 #include "events.h"
 #include "strformat.h"
+#include "curses.h"
+#include "cmdparser.h"
 #include <string.h>
 #include <stdlib.h>
+#include <ncurses.h>
 
 #define EVENTS_MAX_SEQ 64
 
@@ -61,6 +64,10 @@ bool events_init()
     if(!_events_sbs)
         return false;
     strformat_set(_events_sbs, 's', "");
+
+    _events_nb_typed = 0;
+    _events_typ_min  = 0;
+    _events_typ_max  = 0;
 
     return true;
 }
@@ -205,6 +212,15 @@ static bool _events_parse_seq(char* str, const char* action)
     }
 }
 
+static void _events_cancel()
+{
+    _events_nb_typed = 0;
+    if(_events_inprompt)
+        curses_command_leave();
+    _events_typ_min = 0;
+    _events_typ_max = _events_seqs_size;
+}
+
 bool events_add(const char* ev, const char* action)
 {
     char* parsed;
@@ -227,11 +243,37 @@ bool events_add(const char* ev, const char* action)
         ret = _events_parse_seq(parsed, action);
 
     free(parsed);
+    _events_cancel();
     return ret;
+}
+
+static bool _events_process_comp(int ev)
+{
+    /* TODO */
+}
+
+static void _events_process_seq(int ev)
+{
+    /* TODO */
 }
 
 void events_process()
 {
-    /* TODO */
+    int ev;
+
+    ev = getch();
+    if(ev == KEY_CANCEL)
+        _events_cancel();
+    else if(_events_inprompt) {
+        if(!curses_command_parse_event(ev)) {
+            strformat_set(_events_sbs, 's', curses_command_leave());
+            cmdparser_parse(
+                strformat_get(_events_seqs[_events_typ_min].action));
+            _events_cancel();
+        }
+    }
+    else if(_events_nb_typed == 0 && _events_process_comp(ev)) {}
+    else
+        _events_process_seq(ev);
 }
 
