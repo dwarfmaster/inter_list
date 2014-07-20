@@ -1,7 +1,10 @@
 
 #include "events.h"
+#include "strformat.h"
 #include <string.h>
 #include <stdlib.h>
+
+#define EVENTS_MAX_SEQ 64
 
 /* Comp event (<C-A-l> for example). */
 struct _events_comp_t {
@@ -21,17 +24,26 @@ struct _events_seq_t {
     char* seq;
     bool use_prefix;
     char* prefix;
-    char* action;
+    strformat_t* action;
 };
 /* The sequence events, sorted by seq. */
 static struct _events_seq_t* _events_seqs;
 static size_t _events_seqs_capa;
 static size_t _events_seqs_size;
+static strformat_symbs_t* _events_sbs;
+
+/* Handling events. */
+static char _events_typed[EVENTS_MAX_SEQ];
+static size_t _events_nb_typed;
+static bool _events_inprompt;
+static size_t _events_typ_min;
+static size_t _events_typ_max;
 
 bool events_init()
 {
     _events_comps = NULL;
     _events_seqs  = NULL;
+    _events_sbs   = NULL;
 
     _events_comps_size = 0;
     _events_comps_capa = 10;
@@ -44,6 +56,11 @@ bool events_init()
     _events_seqs = malloc(sizeof(struct _events_seq_t) * _events_seqs_capa);
     if(!_events_seqs)
         return false;
+
+    _events_sbs = strformat_symbols("s");
+    if(!_events_sbs)
+        return false;
+    strformat_set(_events_sbs, 's', "");
 
     return true;
 }
@@ -61,12 +78,15 @@ void events_quit()
     if(_events_seqs) {
         for(i = 0; i < _events_seqs_size; ++i) {
             free(_events_seqs[i].seq);
-            free(_events_seqs[i].action);
+            strformat_destroy(_events_seqs[i].action);
             if(_events_seqs[i].use_prefix)
                 free(_events_seqs[i].prefix);
         }
         free(_events_seqs);
     }
+    
+    if(_events_sbs)
+        strformat_symbols_destroy(_events_sbs);
 }
 
 void events_clear()
@@ -167,7 +187,7 @@ static bool _events_parse_seq(char* str, const char* action)
     else
         sq.seq = strdup(str);
 
-    sq.action = strdup(action);
+    sq.action = strformat_parse(_events_sbs, action);
     for(i = 0; i < _events_seqs_size; ++i) {
         if(strcmp(sq.seq, _events_seqs[i].seq) < 0)
             break;
