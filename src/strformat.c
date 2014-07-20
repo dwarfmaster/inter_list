@@ -77,7 +77,7 @@ void strformat_symbols_destroy(strformat_symbs_t* sbs)
     free(sbs);
 }
 
-void strformat_set(strformat_symbs_t* sbs, char symbol, char* value)
+void strformat_set(strformat_symbs_t* sbs, char symbol, const char* value)
 {
     size_t i;
     char* ch;

@@ -21,7 +21,7 @@ strformat_symbs_t* strformat_symbols(char* symbols);
 void strformat_symbols_destroy(strformat_symbs_t* sbs);
 
 /* Set a value for a symbol. */
-void strformat_set(strformat_symbs_t* sbs, char symbol, char* value);
+void strformat_set(strformat_symbs_t* sbs, char symbol, const char* value);
 
 /* Parse a string to prepare the symbols to be placed on it. The
  * strformat_symbs_t object will be attached to it, so it must be destroyed
