@@ -6,6 +6,7 @@
 #include "strformat.h"
 #include "curses.h"
 #include "cmdparser.h"
+#include "events.h"
 
 static void _cb_up(const char* str, void* data) {
     unsigned int up = 1;
@@ -45,6 +46,12 @@ static void _cb_quit(const char* str, void* data) {
     *cont = false;
 }
 
+static void _cb_exe(const char* str, void* data) {
+    if(data) { } /* avoid warnings */
+    if(str)
+        cmdparser_parse(str);
+}
+
 int main(int argc, char *argv[])
 {
     spawn_t sp;
@@ -52,14 +59,11 @@ int main(int argc, char *argv[])
     char buffer[256];
     const char* lines[2048];
     char* line;
-    const char* command;
     size_t rd;
     strformat_symbs_t* symbs;
     strformat_t* fmt;
     size_t nb;
     size_t i;
-    int c;
-    bool incmd = false;
     bool cont = true;
 
     if(argc < 2) {
@@ -134,32 +138,23 @@ int main(int argc, char *argv[])
     cmdparser_add_command("right", &_cb_right, NULL);
     cmdparser_add_command("left",  &_cb_left,  NULL);
     cmdparser_add_command("quit",  &_cb_quit,  &cont);
+    cmdparser_add_command("exe",   &_cb_exe,   NULL);
+
+    if(!events_init()) {
+        printf("Couldn't init events.\n");
+        return 1;
+    }
+
+    events_add("<C-q>",         "quit");
+    events_add("i",             "up");
+    events_add("k",             "down");
+    events_add("l",             "right");
+    events_add("j",             "left");
+    events_add(":<Command : >", "exe %s");
 
     curses_draw();
     while(cont) {
-        c = getch();
-        if(incmd) {
-            incmd = curses_command_parse_event(c);
-            if(!incmd) {
-                command = curses_command_leave();
-                if(!cmdparser_parse(command))
-                    fprintf(stderr, "Couldn't parse \"%s\".\n", command);
-            }
-        }
-        else {
-            if(c == 'i')
-                curses_list_up(1);
-            else if(c == 'k')
-                curses_list_down(1);
-            else if(c == 'l')
-                curses_list_right(1);
-            else if(c == 'j')
-                curses_list_left(1);
-            else if(c == ':') {
-                curses_command_enter("Command : ");
-                incmd = true;
-            }
-        }
+        events_process();
         curses_draw();
     }
 
@@ -169,6 +164,7 @@ int main(int argc, char *argv[])
     for(i = 0; i < nb; ++i)
         free((char*)lines[i]);
 
+    events_quit();
     cmdparser_quit();
     curses_end();
     return 0;
