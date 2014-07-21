@@ -151,6 +151,13 @@ int main(int argc, char *argv[])
     events_add("l",             "right");
     events_add("j",             "left");
     events_add(":<Command : >", "exe %s");
+    events_add("gg",            "up 1000");
+    events_add("G",             "down 1000");
+    events_add("quit",          "quit");
+    events_add("mz<Up : >",     "up %s");
+    events_add("mq<Left : >",   "left %s");
+    events_add("ms<Down : >",   "down %s");
+    events_add("md<Right : >",  "right %s");
 
     curses_draw();
     while(cont) {
