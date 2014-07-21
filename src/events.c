@@ -289,7 +289,47 @@ static bool _events_process_comp(int ev)
 
 static void _events_process_seq(int ev)
 {
-    /* TODO */
+    char c;
+    size_t i;
+    size_t off;
+    struct _events_seq_t sq;
+
+    c   = (char)ev;
+    off = _events_nb_typed;
+    for(i = _events_typ_min; i < _events_typ_max; ++i) {
+        if(strlen(_events_seqs[i].seq) > off) {
+            if(_events_seqs[i].seq[off] < c)
+                ++_events_typ_min;
+            else if(_events_seqs[i].seq[off] > c)
+                --_events_typ_max;
+        }
+        else
+            ++_events_typ_min;
+    }
+
+    /* No events matching. */
+    if(_events_typ_max - _events_typ_min < 2)
+        _events_cancel();
+    /* One event potentially matching. */
+    else if(_events_typ_max - _events_typ_min == 2) {
+        sq = _events_seqs[_events_typ_min + 1];
+        _events_typed[off]     = c;
+        _events_typed[off + 1] = '\0';
+        if(strcmp(_events_typed, sq.seq) == 0) {
+            if(sq.use_prefix) {
+                _events_inprompt = true;
+                curses_command_enter(sq.prefix);
+                _events_typ_max = ++_events_typ_min;
+            }
+            else {
+                strformat_set(_events_sbs, 's', "");
+                cmdparser_parse(strformat_get(sq.action));
+                _events_cancel();
+            }
+        }
+        else
+            _events_cancel();
+    }
 }
 
 void events_process()
