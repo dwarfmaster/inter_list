@@ -62,7 +62,7 @@ static bool _curses_init_ncurses()
 {
     if(!initscr())
         return false;
-    cbreak();
+    raw();
     noecho();
     keypad(stdscr, TRUE);
     _curses_term_width   = COLS;
