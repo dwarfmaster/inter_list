@@ -16,9 +16,9 @@ void events_clear();
 /* Add an event. ev is the string describing the event. action must be a valid
  * command. ev must have one of the following syntaxes :
  *  - <C-l>      : press of letter l while ctrl mod is on. The handled
- *                 modifiers are ctrl (C), shift (S) and alt (A). You can
- *                 combine them (<S-A-c> for example), but there can be only
- *                 one letter.
+ *                 modifiers are ctrl (C), shift (S), alt right (A), alt left
+ *                 (G), and super (W). You can combine them
+ *                 (<S-A-c> for example), but there can be only one letter.
  *  - abc        : if the letters a, b and then c are pressed in this order.
  *                 This is case insensitive.
  *  - abc<Cmd :> : the event is the same as before, but when triggered a prompt

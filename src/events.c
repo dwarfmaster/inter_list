@@ -6,14 +6,22 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <sys/ioctl.h>
 
 #define EVENTS_MAX_SEQ 64
 
+/* Modifiers */
+#define EVENTS_MOD_SHIFT (1<<0)
+#define EVENTS_MOD_ALTR  (1<<1)
+#define EVENTS_MOD_CTRL  (1<<2)
+#define EVENTS_MOD_ALTL  (1<<3)
+#define EVENTS_MOD_SUPER (1<<6)
+#define EVENTS_MOD_MASK  (EVENTS_MOD_SHIFT | EVENTS_MOD_CTRL \
+        | EVENTS_MOD_ALTL | EVENTS_MOD_ALTR | EVENTS_MOD_SUPER)
+
 /* Comp event (<C-A-l> for example). */
 struct _events_comp_t {
-    bool ctrl;
-    bool shift;
-    bool alt;
+    unsigned char mods;
     int letter;
     char* action;
 };
@@ -131,16 +139,21 @@ static bool _events_parse_comp(char* str, const char* action)
     if(strlen(str) == 0 || strlen(str) % 2 != 1)
         return false;
 
+    cp.mods = 0;
     for(i = 0; i < strlen(str); i += 2) {
         if(i != strlen(str) - 1 && str[i+1] != '-')
             return false;
         c = str[i];
         if(c == 'C')
-            cp.ctrl = true;
+            cp.mods |= EVENTS_MOD_CTRL;
         else if(c == 'A')
-            cp.alt = true;
+            cp.mods |= EVENTS_MOD_ALTR;
+        else if(c == 'G')
+            cp.mods |= EVENTS_MOD_ALTL;
         else if(c == 'S')
-            cp.shift = true;
+            cp.mods |= EVENTS_MOD_SHIFT;
+        else if(c == 'W')
+            cp.mods |= EVENTS_MOD_SUPER;
         else if(!letter) {
             cp.letter = c;
             letter = true;
@@ -247,9 +260,31 @@ bool events_add(const char* ev, const char* action)
     return ret;
 }
 
+static unsigned char _events_modifiers()
+{
+    unsigned char mods = 6;
+    if(ioctl(0, TIOCLINUX, &mods) < 0)
+        return 0;
+    mods &= EVENTS_MOD_MASK;
+    return mods;
+}
+
 static bool _events_process_comp(int ev)
 {
-    /* TODO */
+    unsigned char mods;
+    size_t i;
+
+    if(ev >= 'A' && ev <= 'Z')
+        ev -= 'A';
+
+    mods = _events_modifiers();
+    for(i = 0; i < _events_comps_size; ++i) {
+        if(_events_comps[i].mods == mods && _events_comps[i].letter == ev) {
+            cmdparser_parse(_events_comps[i].action);
+            return true;
+        }
+    }
+    return false;
 }
 
 static void _events_process_seq(int ev)
