@@ -110,22 +110,47 @@ void events_clear()
     _events_seqs_size  = 0;
 }
 
-static bool _events_insert(void** array, size_t pos, size_t* capa,
-        size_t* size, size_t elem_size)
+static bool _events_comp_insert(size_t pos, struct _events_comp_t elem)
 {
-    size_t nsize = *size + 1;
+    size_t nsize = _events_comps_size + 1;
     size_t ncapa;
-    if(nsize >= *capa) {
-        ncapa = *capa + 10;
-        *array = realloc(*array, ncapa * elem_size);
-        if(!*array) {
-            *size = 0;
-            *capa = 0;
+    if(nsize >= _events_comps_capa) {
+        ncapa = _events_comps_capa + 10;
+        _events_comps = realloc(_events_comps,
+                ncapa * sizeof(struct _events_comp_t));
+        if(!_events_comps) {
+            _events_comps_size = 0;
+            _events_comps_capa = 0;
             return false;
         }
     }
 
-    memmove(*array + pos + 1, *array + pos, elem_size * (*size - pos));
+    memmove(_events_comps + pos + 1, _events_comps + pos,
+            sizeof(struct _events_comp_t) * (_events_comps_size - pos));
+    _events_comps[pos] = elem;
+    ++_events_comps_size;
+    return true;
+}
+
+static bool _events_seq_insert(size_t pos, struct _events_seq_t elem)
+{
+    size_t nsize = _events_seqs_size + 1;
+    size_t ncapa;
+    if(nsize >= _events_seqs_capa) {
+        ncapa = _events_seqs_capa + 10;
+        _events_seqs = realloc(_events_seqs,
+                ncapa * sizeof(struct _events_seq_t));
+        if(!_events_seqs) {
+            _events_seqs_size = 0;
+            _events_seqs_capa = 0;
+            return false;
+        }
+    }
+
+    memmove(_events_seqs + pos + 1, _events_seqs + pos,
+            sizeof(struct _events_seq_t) * (_events_seqs_size - pos));
+    _events_seqs[pos] = elem;
+    ++_events_seqs_size;
     return true;
 }
 
@@ -169,14 +194,11 @@ static bool _events_parse_comp(char* str, const char* action)
         if(cp.letter < _events_comps[i].letter)
             break;
     }
-    if(!_events_insert((void**)&_events_comps, i, &_events_comps_capa,
-                &_events_comps_size, sizeof(struct _events_comp_t))) {
+    if(!_events_comp_insert(i, cp)) {
         free(cp.action);
         return false;
-    } else {
-        _events_comps[i] = cp;
+    } else
         return true;
-    }
 }
 
 static bool _events_parse_seq(char* str, const char* action)
@@ -212,17 +234,14 @@ static bool _events_parse_seq(char* str, const char* action)
         if(strcmp(sq.seq, _events_seqs[i].seq) < 0)
             break;
     }
-    if(!_events_insert((void**)&_events_seqs, i, &_events_seqs_capa,
-                &_events_seqs_size, sizeof(struct _events_seq_t))) {
+    if(!_events_seq_insert(i, sq)) {
         if(sq.use_prefix)
             free(sq.prefix);
         free(sq.action);
         free(sq.seq);
         return false;
-    } else {
-        _events_seqs[i] = sq;
+    } else
         return true;
-    }
 }
 
 static void _events_cancel()

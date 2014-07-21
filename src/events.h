@@ -28,7 +28,7 @@ void events_clear();
  */
 bool events_add(const char* ev, const char* action);
 
-/* Non-blocking event processing. */
+/* Blocking event processing. */
 void events_process();
 
 #endif
