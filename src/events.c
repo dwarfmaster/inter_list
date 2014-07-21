@@ -247,8 +247,10 @@ static bool _events_parse_seq(char* str, const char* action)
 static void _events_cancel()
 {
     _events_nb_typed = 0;
-    if(_events_inprompt)
+    if(_events_inprompt) {
         curses_command_leave();
+        _events_inprompt = false;
+    }
     _events_typ_min = 0;
     _events_typ_max = _events_seqs_size;
 }
@@ -323,31 +325,32 @@ static void _events_process_seq(int ev)
                 --_events_typ_max;
         }
         else
-            ++_events_typ_min;
+            --_events_typ_max;
     }
 
     /* No events matching. */
     if(_events_typ_max - _events_typ_min < 1)
         _events_cancel();
     /* One event potentially matching. */
-    else if(_events_typ_max - _events_typ_min == 1) {
-        sq = _events_seqs[_events_typ_min];
+    else {
         _events_typed[off]     = c;
         _events_typed[off + 1] = '\0';
-        if(strcmp(_events_typed, sq.seq) == 0) {
-            if(sq.use_prefix) {
-                _events_inprompt = true;
-                curses_command_enter(sq.prefix);
-                _events_typ_max = ++_events_typ_min;
-            }
-            else {
-                strformat_set(_events_sbs, 's', "");
-                cmdparser_parse(strformat_get(sq.action));
-                _events_cancel();
+        ++_events_nb_typed;
+        for(i = _events_typ_min; i < _events_typ_max; ++i) {
+            sq = _events_seqs[i];
+            if(strcmp(_events_typed, sq.seq) == 0) {
+                if(sq.use_prefix) {
+                    _events_inprompt = true;
+                    curses_command_enter(sq.prefix);
+                    _events_typ_max = _events_typ_min = i;
+                }
+                else {
+                    strformat_set(_events_sbs, 's', "");
+                    cmdparser_parse(strformat_get(sq.action));
+                    _events_cancel();
+                }
             }
         }
-        else
-            _events_cancel();
     }
 }
 
