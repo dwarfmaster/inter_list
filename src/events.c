@@ -327,11 +327,11 @@ static void _events_process_seq(int ev)
     }
 
     /* No events matching. */
-    if(_events_typ_max - _events_typ_min < 2)
+    if(_events_typ_max - _events_typ_min < 1)
         _events_cancel();
     /* One event potentially matching. */
-    else if(_events_typ_max - _events_typ_min == 2) {
-        sq = _events_seqs[_events_typ_min + 1];
+    else if(_events_typ_max - _events_typ_min == 1) {
+        sq = _events_seqs[_events_typ_min];
         _events_typed[off]     = c;
         _events_typed[off + 1] = '\0';
         if(strcmp(_events_typed, sq.seq) == 0) {
