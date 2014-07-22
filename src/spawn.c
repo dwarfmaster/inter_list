@@ -2,6 +2,7 @@
 #include "spawn.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/wait.h>
@@ -35,6 +36,27 @@ spawn_t spawn_create(char* const prog[])
 
     /* Parent. */
     close(sp.pipe[1]);
+    return sp;
+}
+
+spawn_t spawn_create_shell(const char* command)
+{
+    const char* shell;
+    char* argv[4];
+    spawn_t sp;
+
+    shell = getenv("SHELL");
+    if(!shell)
+        shell = "/bin/sh";
+
+    argv[0] = strdup(shell);
+    argv[1] = "-c";
+    argv[2] = strdup(command);
+    argv[3] = NULL;
+    sp = spawn_create(argv);
+
+    free(argv[0]);
+    free(argv[2]);
     return sp;
 }
 
