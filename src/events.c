@@ -203,6 +203,7 @@ static bool _events_parse_comp(char* str, const char* action)
 
 static bool _events_parse_seq(char* str, const char* action)
 {
+    char* strtokbuf;
     struct _events_seq_t sq;
     size_t i;
     sq.use_prefix = false;
@@ -214,11 +215,11 @@ static bool _events_parse_seq(char* str, const char* action)
     i = strlen(str) - 1;
     if(str[i] == '>') {
         str[i] = '\0';
-        str = strtok(str, "<");
+        str = strtok_r(str, "<", &strtokbuf);
         if(!str || strlen(str) == 0)
             return false;
         sq.seq = strdup(str);
-        str = strtok(NULL, "");
+        str = strtok_r(NULL, "", &strtokbuf);
         if(!str) {
             free(sq.seq);
             return false;

@@ -125,9 +125,10 @@ bool cmdparser_parse(const char* line)
 {
     char* used = strdup(line);
     char* name;
+    char* strtokbuf;
     struct _cmdparser_command_t* cmd;
 
-    name = strtok(used, " ");
+    name = strtok_r(used, " ", &strtokbuf);
     if(!name) {
         free(used);
         return false;
@@ -139,7 +140,7 @@ bool cmdparser_parse(const char* line)
         return false;
     }
 
-    name = strtok(NULL, "");
+    name = strtok_r(NULL, "", &strtokbuf);
     if(name && strlen(name) == 0)
         name = NULL;
 

@@ -67,6 +67,7 @@ void cmdlifo_update()
 {
     char buffer[4096];
     char* line;
+    char* strtokbuf;
     size_t l;
 
     if(_cmdlifo_nb == 0)
@@ -79,10 +80,10 @@ void cmdlifo_update()
 
     while((l = spawn_read(_cmdlifo_sps[_cmdlifo_nb - 1], buffer, 4095)) != 0) {
         buffer[l] = '\0';
-        line = strtok(buffer, "\n");
+        line = strtok_r(buffer, "\n", &strtokbuf);
         while(line) {
             cmdparser_parse(line);
-            line = strtok(NULL, "\n");
+            line = strtok_r(NULL, "\n", &strtokbuf);
         }
     }
 }
