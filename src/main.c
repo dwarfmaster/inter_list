@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <ncurses.h>
 #include <stdlib.h>
+#include <sys/select.h>
 #include "spawn.h"
 #include "strformat.h"
 #include "curses.h"
 #include "cmdparser.h"
 #include "events.h"
+#include "cmdlifo.h"
 
 static void _cb_up(const char* str, void* data) {
     unsigned int up = 1;
@@ -52,6 +54,25 @@ static void _cb_exe(const char* str, void* data) {
         cmdparser_parse(str);
 }
 
+static void _cb_map(const char* str, void* data) {
+    if(data) { } /* avoid warnings */
+    if(!str)
+        return;
+
+    char* strtokbuf;
+    char* keys;
+    char* action;
+    char* used = strdup(str);
+
+    keys = strtok_r(used, " ", &strtokbuf);
+    if(keys) {
+        action = strtok_r(NULL, "", &strtokbuf);
+        if(action)
+            events_add(keys, action);
+    }
+    free(used);
+}
+
 int main(int argc, char *argv[])
 {
     spawn_t sp;
@@ -65,21 +86,22 @@ int main(int argc, char *argv[])
     size_t nb;
     size_t i;
     bool cont = true;
+    fd_set fds;
 
-    if(argc < 2) {
+    if(argc < 3) {
         printf("Too few arguments.\n");
         return 1;
     }
 
     /* %s -> the data, %n -> the number of the paquet. */
     symbs = strformat_symbols("sn");
-    fmt   = strformat_parse(symbs, argv[1]);
+    fmt   = strformat_parse(symbs, argv[2]);
     if(!fmt) {
         printf("Couldn't parse format string.\n");
         return 1;
     }
 
-    sp = spawn_create(argv + 2);
+    sp = spawn_create(argv + 3);
     if(!spawn_ok(sp)) {
         printf("Couldn't spawn argument.\n");
         return 1;
@@ -139,29 +161,37 @@ int main(int argc, char *argv[])
     cmdparser_add_command("left",  &_cb_left,  NULL);
     cmdparser_add_command("quit",  &_cb_quit,  &cont);
     cmdparser_add_command("exe",   &_cb_exe,   NULL);
+    cmdparser_add_command("map",   &_cb_map,   NULL);
+
+    if(!cmdlifo_init()) {
+        printf("Coudln't init cmdlifo.\n");
+        return 1;
+    }
+    if(!cmdlifo_push(argv[1])) {
+        printf("Couldn't push %s to cmdlifo.\n", argv[1]);
+        return 1;
+    }
 
     if(!events_init()) {
         printf("Couldn't init events.\n");
         return 1;
     }
 
-    events_add("<C-q>",         "quit");
-    events_add("i",             "up");
-    events_add("k",             "down");
-    events_add("l",             "right");
-    events_add("j",             "left");
-    events_add(":<Command : >", "exe %s");
-    events_add("gg",            "up 1000");
-    events_add("G",             "down 1000");
-    events_add("quit",          "quit");
-    events_add("mz<Up : >",     "up %s");
-    events_add("mq<Left : >",   "left %s");
-    events_add("ms<Down : >",   "down %s");
-    events_add("md<Right : >",  "right %s");
+    FD_ZERO(&fds);
+    FD_SET(0, &fds);
+    FD_SET(cmdlifo_fd(), &fds);
 
     curses_draw();
     while(cont) {
-        events_process();
+        select(cmdlifo_fd() + 1, &fds, NULL, NULL, NULL);
+        if(FD_ISSET(0, &fds))
+            events_process();
+        if(FD_ISSET(cmdlifo_fd(), &fds))
+            cmdlifo_update();
+
+        FD_ZERO(&fds);
+        FD_SET(0, &fds);
+        FD_SET(cmdlifo_fd(), &fds);
         curses_draw();
     }
 
@@ -172,6 +202,7 @@ int main(int argc, char *argv[])
         free((char*)lines[i]);
 
     events_quit();
+    cmdlifo_quit();
     cmdparser_quit();
     curses_end();
     return 0;
