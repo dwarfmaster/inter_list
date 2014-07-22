@@ -3,7 +3,8 @@ OBJS=objs/main.o \
 	 objs/strformat.o \
 	 objs/curses.o \
 	 objs/cmdparser.o \
-	 objs/events.o
+	 objs/events.o \
+	 objs/cmdlifo.o
 CFLAGS=-Wall -Wextra -g `pkg-config --cflags ncurses`
 LDFLAGS=`pkg-config --libs ncurses`
 PROG=list.out
