@@ -10,6 +10,7 @@ spawn_t spawn_create(char* const prog[])
 {
     spawn_t sp;
     sp.process = -1;
+    sp.paused  = false;
 
     /* Creating the pipe. */
     if(pipe(sp.pipe) < 0)
@@ -40,6 +41,25 @@ spawn_t spawn_create(char* const prog[])
 bool spawn_ok(spawn_t sp)
 {
     return (sp.process >= 0);
+}
+
+void spawn_pause(spawn_t sp)
+{
+    if(sp.paused)
+        return;
+    kill(sp.process, SIGSTOP);
+}
+
+void spawn_resume(spawn_t sp)
+{
+    if(!sp.paused)
+        return;
+    kill(sp.process, SIGCONT);
+}
+
+bool spawn_paused(spawn_t sp)
+{
+    return sp.paused;
 }
 
 void spawn_close(spawn_t* sp)

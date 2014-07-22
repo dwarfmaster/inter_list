@@ -8,6 +8,7 @@
 typedef struct _spawn_t {
     pid_t process;
     int pipe[2];
+    bool paused;
 } spawn_t;
 
 /* Spawn a program and link its stdout to a pipe.
@@ -18,6 +19,15 @@ spawn_t spawn_create(char* const prog[]);
 
 /* Check if the spawn could be created. */
 bool spawn_ok(spawn_t sp);
+
+/* Pause a spawn. */
+void spawn_pause(spawn_t sp);
+
+/* Resume a spawn. */
+void spawn_resume(spawn_t sp);
+
+/* Indicates if a spawn is paused. */
+bool spawn_paused(spawn_t sp);
 
 /* Close a spawned process, discarding all pending data. */
 void spawn_close(spawn_t* sp);
