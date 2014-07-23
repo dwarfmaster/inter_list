@@ -95,6 +95,13 @@ static void _cb_feed(const char* str, void* data) {
     feeder_set(str);
 }
 
+static void _cb_spawn(const char* str, void* data) {
+    if(!data) { } /* avoid warnings */
+    if(!str)
+        return;
+    cmdlifo_push(str);
+}
+
 int main(int argc, char *argv[])
 {
     bool cont = true;
@@ -142,6 +149,7 @@ int main(int argc, char *argv[])
     cmdparser_add_command("exe",   &_cb_exe,   NULL);
     cmdparser_add_command("map",   &_cb_map,   NULL);
     cmdparser_add_command("feed",  &_cb_feed,  NULL);
+    cmdparser_add_command("spawn", &_cb_spawn, NULL);
 
     if(!cmdlifo_init()) {
         printf("Coudln't init cmdlifo.\n");
