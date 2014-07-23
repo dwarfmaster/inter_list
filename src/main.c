@@ -74,17 +74,29 @@ static void _cb_map(const char* str, void* data) {
     if(!str)
         return;
 
-    char* strtokbuf;
-    char* keys;
-    char* action;
+    char* keys = NULL;
+    char* action = NULL;
     char* used = strdup(str);
+    size_t i;
+    size_t nb;
 
-    keys = strtok_r(used, " ", &strtokbuf);
-    if(keys) {
-        action = strtok_r(NULL, "", &strtokbuf);
-        if(action)
-            events_add(keys, action);
+    nb = 0;
+    for(i = 0; i < strlen(used); ++i) {
+        if(used[i] == '<')
+            ++nb;
+        else if(nb > 0 && used[i] == '>')
+            --nb;
+        else if(nb == 0 && used[i] == ' ') {
+            used[i] = '\0';
+            keys   = used;
+            action = used + i + 1;
+            break;
+        }
     }
+
+    if(keys && strlen(keys) != 0 
+            && action && strlen(action) != 0)
+        events_add(keys, action);
     free(used);
 }
 
