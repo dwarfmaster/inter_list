@@ -70,7 +70,8 @@ static bool _cmdlifo_parse_buffer(char* buffer)
         cmdparser_parse(line);
         if(_cmdlifo_spawned) {
             line = strtok_r(NULL, "", &strtokbuf);
-            _cmdlifo_sps[nb].buffer = strdup(line);
+            if(line)
+                _cmdlifo_sps[nb].buffer = strdup(line);
             _cmdlifo_spawned = false;
             return false;
         }
