@@ -5,22 +5,35 @@
 #include <stdlib.h>
 #include <string.h>
 
-static spawn_t* _cmdlifo_sps;
-static size_t   _cmdlifo_nb;
-static size_t   _cmdlifo_capa;
+struct _cmdlifo_sp_t {
+    spawn_t sp;
+    char* buffer;
+};
+static struct _cmdlifo_sp_t* _cmdlifo_sps;
+static size_t                _cmdlifo_nb;
+static size_t                _cmdlifo_capa;
+static bool                  _cmdlifo_spawned;
 
 bool cmdlifo_init()
 {
-    _cmdlifo_nb   = 0;
-    _cmdlifo_capa = 10;
-    _cmdlifo_sps  = malloc(_cmdlifo_capa * sizeof(spawn_t));
+    _cmdlifo_nb      = 0;
+    _cmdlifo_capa    = 10;
+    _cmdlifo_sps     = malloc(_cmdlifo_capa * sizeof(struct _cmdlifo_sp_t));
+    _cmdlifo_spawned = false;
     return (_cmdlifo_sps != NULL);
 }
 
 void cmdlifo_quit()
 {
-    if(_cmdlifo_sps)
+    size_t i;
+    if(_cmdlifo_sps) {
+        for(i = 0; i < _cmdlifo_nb; ++i) {
+            if(_cmdlifo_sps[i].buffer)
+                free(_cmdlifo_sps[i].buffer);
+            spawn_close(&_cmdlifo_sps[i].sp);
+        }
         free(_cmdlifo_sps);
+    }
 }
 
 bool cmdlifo_push(const char* cmd)
@@ -33,14 +46,37 @@ bool cmdlifo_push(const char* cmd)
     }
 
     if(_cmdlifo_nb != 0)
-        spawn_pause(_cmdlifo_sps[_cmdlifo_nb - 1]);
-    _cmdlifo_sps[_cmdlifo_nb] = spawn_create_shell(cmd);
-    if(!spawn_ok(_cmdlifo_sps[_cmdlifo_nb])) {
-        spawn_close(&_cmdlifo_sps[_cmdlifo_nb]);
+        spawn_pause(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
+    _cmdlifo_sps[_cmdlifo_nb].sp     = spawn_create_shell(cmd);
+    _cmdlifo_sps[_cmdlifo_nb].buffer = NULL;
+    if(!spawn_ok(_cmdlifo_sps[_cmdlifo_nb].sp)) {
+        spawn_close(&_cmdlifo_sps[_cmdlifo_nb].sp);
         return false;
     }
 
+    _cmdlifo_spawned = true;
     ++_cmdlifo_nb;
+    return true;
+}
+
+static bool _cmdlifo_parse_buffer(char* buffer)
+{
+    char* line;
+    char* strtokbuf;
+    size_t nb = _cmdlifo_nb - 1;
+
+    line = strtok_r(buffer, "\n", &strtokbuf);
+    while(line) {
+        cmdparser_parse(line);
+        if(_cmdlifo_spawned) {
+            line = strtok_r(NULL, "", &strtokbuf);
+            _cmdlifo_sps[nb].buffer = strdup(line);
+            _cmdlifo_spawned = false;
+            return false;
+        }
+        line = strtok_r(NULL, "\n", &strtokbuf);
+    }
+
     return true;
 }
 
@@ -50,9 +86,17 @@ void cmdlifo_pop()
         return;
 
     --_cmdlifo_nb;
-    spawn_close(&_cmdlifo_sps[_cmdlifo_nb]);
-    if(_cmdlifo_nb != 0)
-        spawn_resume(_cmdlifo_sps[_cmdlifo_nb - 1]);
+    spawn_close(&_cmdlifo_sps[_cmdlifo_nb].sp);
+    if(_cmdlifo_sps[_cmdlifo_nb].buffer)
+        free(_cmdlifo_sps[_cmdlifo_nb].buffer);
+
+    if(_cmdlifo_nb != 0) {
+        spawn_resume(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
+        if(_cmdlifo_sps[_cmdlifo_nb - 1].buffer) {
+            _cmdlifo_parse_buffer(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
+            free(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
+        }
+    }
 }
 
 int cmdlifo_fd()
@@ -60,31 +104,32 @@ int cmdlifo_fd()
     if(_cmdlifo_nb == 0)
         return 0;
     else
-        return spawn_fd(_cmdlifo_sps[_cmdlifo_nb - 1]);
+        return spawn_fd(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
 }
 
 void cmdlifo_update()
 {
     char buffer[4096];
-    char* line;
-    char* strtokbuf;
     size_t l;
+    size_t nb = _cmdlifo_nb;
 
-    if(_cmdlifo_nb == 0)
+    if(nb == 0)
         return;
+    --nb;
 
-    if(spawn_ended(_cmdlifo_sps[_cmdlifo_nb - 1])) {
+    if(spawn_ended(_cmdlifo_sps[nb].sp)) {
         cmdlifo_pop();
         cmdlifo_update();
     }
 
-    while((l = spawn_read(_cmdlifo_sps[_cmdlifo_nb - 1], buffer, 4095)) != 0) {
+    _cmdlifo_spawned = false;
+    while((l = spawn_read(_cmdlifo_sps[nb].sp, buffer, 4095)) != 0) {
         buffer[l] = '\0';
-        line = strtok_r(buffer, "\n", &strtokbuf);
-        while(line) {
-            cmdparser_parse(line);
-            line = strtok_r(NULL, "\n", &strtokbuf);
-        }
+        if(!_cmdlifo_parse_buffer(buffer))
+            return;
     }
+
+    if(spawn_ended(_cmdlifo_sps[nb].sp))
+        cmdlifo_pop();
 }
 
