@@ -1,5 +1,4 @@
 
-#include <stdio.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include <sys/select.h>
@@ -134,7 +133,6 @@ int main(int argc, char *argv[])
         strncat(cmd, " ", size);
         --size;
     }
-    fprintf(stderr, "Cmd : %s\n", cmd);
 
     if(!curses_init()) {
         printf("Couldn't init curses.\n");
