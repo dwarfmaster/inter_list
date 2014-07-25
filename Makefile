@@ -5,7 +5,8 @@ OBJS=objs/main.o \
 	 objs/cmdparser.o \
 	 objs/events.o \
 	 objs/cmdlifo.o \
-	 objs/feeder.o
+	 objs/feeder.o \
+	 objs/commands.o
 CFLAGS=-Wall -Wextra -g `pkg-config --cflags ncurses`
 LDFLAGS=`pkg-config --libs ncurses`
 PROG=list.out

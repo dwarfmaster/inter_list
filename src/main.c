@@ -9,6 +9,7 @@
 #include "events.h"
 #include "cmdlifo.h"
 #include "feeder.h"
+#include "commands.h"
 
 static int _set_fds(fd_set* fds)
 {
@@ -22,95 +23,6 @@ static int _set_fds(fd_set* fds)
         FD_SET(feeder_fd(), fds);
     }
     return mfd + 1;
-}
-
-static void _cb_up(const char* str, void* data) {
-    unsigned int up = 1;
-    if(data) { } /* avoid warnings */
-    if(str)
-        sscanf(str, "%u", &up);
-    curses_list_up(up);
-}
-
-static void _cb_down(const char* str, void* data) {
-    unsigned int down = 1;
-    if(data) { } /* avoid warnings */
-    if(str)
-        sscanf(str, "%u", &down);
-    curses_list_down(down);
-}
-
-static void _cb_left(const char* str, void* data) {
-    unsigned int left = 1;
-    if(data) { } /* avoid warnings */
-    if(str)
-        sscanf(str, "%u", &left);
-    curses_list_left(left);
-}
-
-static void _cb_right(const char* str, void* data) {
-    unsigned int right = 1;
-    if(data) { } /* avoid warnings */
-    if(str)
-        sscanf(str, "%u", &right);
-    curses_list_right(right);
-}
-
-static void _cb_quit(const char* str, void* data) {
-    if(str) { } /* avoid warnings */
-    bool* cont = data;
-    *cont = false;
-}
-
-static void _cb_exe(const char* str, void* data) {
-    if(data) { } /* avoid warnings */
-    if(str)
-        cmdparser_parse(str);
-}
-
-static void _cb_map(const char* str, void* data) {
-    if(data) { } /* avoid warnings */
-    if(!str)
-        return;
-
-    char* keys = NULL;
-    char* action = NULL;
-    char* used = strdup(str);
-    size_t i;
-    size_t nb;
-
-    nb = 0;
-    for(i = 0; i < strlen(used); ++i) {
-        if(used[i] == '<')
-            ++nb;
-        else if(nb > 0 && used[i] == '>')
-            --nb;
-        else if(nb == 0 && used[i] == ' ') {
-            used[i] = '\0';
-            keys   = used;
-            action = used + i + 1;
-            break;
-        }
-    }
-
-    if(keys && strlen(keys) != 0 
-            && action && strlen(action) != 0)
-        events_add(keys, action);
-    free(used);
-}
-
-static void _cb_feed(const char* str, void* data) {
-    if(data) { } /* avoid warnings. */
-    if(!str)
-        return;
-    feeder_set(str);
-}
-
-static void _cb_spawn(const char* str, void* data) {
-    if(!data) { } /* avoid warnings */
-    if(!str)
-        return;
-    cmdlifo_push(str);
 }
 
 int main(int argc, char *argv[])
@@ -150,16 +62,7 @@ int main(int argc, char *argv[])
         printf("Couldn't init cmdparse.\n");
         return 1;
     }
-
-    cmdparser_add_command("up",    &_cb_up,    NULL);
-    cmdparser_add_command("down",  &_cb_down,  NULL);
-    cmdparser_add_command("right", &_cb_right, NULL);
-    cmdparser_add_command("left",  &_cb_left,  NULL);
-    cmdparser_add_command("quit",  &_cb_quit,  &cont);
-    cmdparser_add_command("exe",   &_cb_exe,   NULL);
-    cmdparser_add_command("map",   &_cb_map,   NULL);
-    cmdparser_add_command("feed",  &_cb_feed,  NULL);
-    cmdparser_add_command("spawn", &_cb_spawn, NULL);
+    commands_setup(&cont);
 
     if(!cmdlifo_init()) {
         printf("Coudln't init cmdlifo.\n");
