@@ -62,7 +62,7 @@ static void _feeder_add_line(char* line)
     char* strtokbuf;
     const char* lines[1];
 
-    ln.id   = strtok_r(line, " ", &strtokbuf);
+    ln.id   = strtok_r(line, "\t", &strtokbuf);
     ln.line = strtok_r(NULL, "",  &strtokbuf);
     if(!ln.id || !ln.line)
         return;
