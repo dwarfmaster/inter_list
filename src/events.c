@@ -3,6 +3,7 @@
 #include "strformat.h"
 #include "curses.h"
 #include "cmdparser.h"
+#include "feeder.h"
 #include <string.h>
 #include <stdlib.h>
 #include <ncurses.h>
@@ -68,10 +69,13 @@ bool events_init()
     if(!_events_seqs)
         return false;
 
-    _events_sbs = strformat_symbols("s");
+    _events_sbs = strformat_symbols("snti");
     if(!_events_sbs)
         return false;
     strformat_set(_events_sbs, 's', "");
+    strformat_set(_events_sbs, 'n', "");
+    strformat_set(_events_sbs, 'y', "");
+    strformat_set(_events_sbs, 'i', "");
 
     _events_nb_typed = 0;
     _events_typ_min  = 0;
@@ -282,6 +286,18 @@ bool events_add(const char* ev, const char* action)
     return ret;
 }
 
+static void _events_set_list_symbols()
+{
+    size_t id;
+    char buffer[256];
+
+    id = feeder_get_id();
+    snprintf(buffer, 256, "%li", id);
+    strformat_set(_events_sbs, 'i', buffer);
+    strformat_set(_events_sbs, 'n', feeder_get_name(id));
+    strformat_set(_events_sbs, 't', feeder_get_text(id));
+}
+
 static unsigned char _events_modifiers()
 {
     unsigned char mods = 6;
@@ -347,6 +363,7 @@ static void _events_process_seq(int ev)
                 }
                 else {
                     strformat_set(_events_sbs, 's', "");
+                    _events_set_list_symbols();
                     cmdparser_parse(strformat_get(sq.action));
                     _events_cancel();
                 }
@@ -365,6 +382,7 @@ void events_process()
     else if(_events_inprompt) {
         if(!curses_command_parse_event(ev)) {
             strformat_set(_events_sbs, 's', curses_command_leave());
+            _events_set_list_symbols();
             cmdparser_parse(
                 strformat_get(_events_seqs[_events_typ_min].action));
             _events_cancel();
