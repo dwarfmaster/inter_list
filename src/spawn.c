@@ -87,7 +87,7 @@ void spawn_resume(spawn_t sp)
 
 bool spawn_paused(spawn_t sp)
 {
-    int stat_loc;
+    int stat_loc = 0;
     if(!spawn_ok(sp))
         return true;
     waitpid(sp.process, &stat_loc, WNOHANG);
@@ -115,7 +115,7 @@ void spawn_wait(spawn_t sp)
 
 bool spawn_ended(spawn_t sp)
 {
-    int stat_loc;
+    int stat_loc = 0;
     if(!spawn_ok(sp))
         return true;
 
