@@ -13,6 +13,11 @@ bool curses_init();
 /* End the curses display. */
 bool curses_end();
 
+/* Mark everything to be redrawn. Nothing will be drawn to screen until the
+ * next call to curses_draw.
+ */
+void curses_redraw();
+
 /* Draw the changes on screen. */
 void curses_draw();
 

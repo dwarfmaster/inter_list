@@ -131,6 +131,14 @@ bool curses_end()
     return true;
 }
 
+void curses_redraw()
+{
+    _curses_top_mustdraw  = true;
+    _curses_bot_mustdraw  = true;
+    _curses_cmd_mustdraw  = true;
+    _curses_list_mustdraw = true;
+}
+
 static void _curses_draw_line(const char* text, unsigned int y, int cp)
 {
     size_t i;
