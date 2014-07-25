@@ -8,7 +8,6 @@
 typedef struct _spawn_t {
     pid_t process;
     int pipe[2];
-    bool paused;
 } spawn_t;
 
 /* Spawn a program and link its stdout to a pipe.

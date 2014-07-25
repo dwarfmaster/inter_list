@@ -11,7 +11,6 @@ spawn_t spawn_create(char* const prog[])
 {
     spawn_t sp;
     sp.process = -1;
-    sp.paused  = false;
 
     /* Creating the pipe. */
     if(pipe(sp.pipe) < 0)
@@ -67,21 +66,25 @@ bool spawn_ok(spawn_t sp)
 
 void spawn_pause(spawn_t sp)
 {
-    if(sp.paused)
+    if(spawn_paused(sp))
         return;
     kill(sp.process, SIGSTOP);
 }
 
 void spawn_resume(spawn_t sp)
 {
-    if(!sp.paused)
+    if(!spawn_paused(sp))
         return;
     kill(sp.process, SIGCONT);
 }
 
 bool spawn_paused(spawn_t sp)
 {
-    return sp.paused;
+    int stat_loc;
+    if(!spawn_ok(sp))
+        return true;
+    waitpid(sp.process, &stat_loc, WNOHANG);
+    return WIFSTOPPED(stat_loc);
 }
 
 void spawn_close(spawn_t* sp)
@@ -105,12 +108,12 @@ void spawn_wait(spawn_t sp)
 
 bool spawn_ended(spawn_t sp)
 {
-    char buffer[256];
+    int stat_loc;
     if(!spawn_ok(sp))
         return true;
 
-    snprintf(buffer, 256, "/proc/%i", sp.process);
-    return (access(buffer, F_OK) == -1);
+    waitpid(sp.process, &stat_loc, WNOHANG);
+    return WIFEXITED(stat_loc);
 }
 
 size_t spawn_read(spawn_t sp, char* buffer, size_t bufsize)
