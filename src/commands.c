@@ -109,17 +109,23 @@ static void _commands_spawn(const char* str, void* data)
     cmdlifo_push(str);
 }
 
+static void _commands_refresh(const char* str, void* data)
+{
+    if(data && str) { } /* avoid warnings */
+    curses_redraw();
+}
+
 void commands_setup(bool* cont)
 {
-    cmdparser_add_command("up",    &_commands_up,    NULL);
-    cmdparser_add_command("down",  &_commands_down,  NULL);
-    cmdparser_add_command("right", &_commands_right, NULL);
-    cmdparser_add_command("left",  &_commands_left,  NULL);
-    cmdparser_add_command("quit",  &_commands_quit,  cont);
-    cmdparser_add_command("exe",   &_commands_exe,   NULL);
-    cmdparser_add_command("map",   &_commands_map,   NULL);
-    cmdparser_add_command("feed",  &_commands_feed,  NULL);
-    cmdparser_add_command("spawn", &_commands_spawn, NULL);
-
+    cmdparser_add_command("up",      &_commands_up,      NULL);
+    cmdparser_add_command("down",    &_commands_down,    NULL);
+    cmdparser_add_command("right",   &_commands_right,   NULL);
+    cmdparser_add_command("left",    &_commands_left,    NULL);
+    cmdparser_add_command("quit",    &_commands_quit,    cont);
+    cmdparser_add_command("exe",     &_commands_exe,     NULL);
+    cmdparser_add_command("map",     &_commands_map,     NULL);
+    cmdparser_add_command("feed",    &_commands_feed,    NULL);
+    cmdparser_add_command("spawn",   &_commands_spawn,   NULL);
+    cmdparser_add_command("refresh", &_commands_refresh, NULL);
 }
 
