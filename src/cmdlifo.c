@@ -96,6 +96,7 @@ void cmdlifo_pop()
         if(_cmdlifo_sps[_cmdlifo_nb - 1].buffer) {
             _cmdlifo_parse_buffer(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
             free(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
+            _cmdlifo_sps[_cmdlifo_nb - 1].buffer = NULL;
         }
     }
 }
