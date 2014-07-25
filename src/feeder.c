@@ -5,8 +5,6 @@
 #include <stdlib.h>
 
 static spawn_t _feeder_sp;
-static bool    _feeder_setted;
-
 struct _feeder_line_t {
     char* line;
     char* id;
@@ -17,18 +15,17 @@ static size_t                  _feeder_capa;
 
 bool feeder_init()
 {
-    _feeder_setted = false;
     _feeder_nb     = 0;
     _feeder_capa   = 50;
     _feeder_lines  = malloc(sizeof(struct _feeder_line_t) * _feeder_capa);
+    _feeder_sp     = spawn_init();
     return _feeder_lines;
 }
 
 void feeder_quit()
 {
     size_t i;
-    if(_feeder_setted)
-        spawn_close(&_feeder_sp);
+    spawn_close(&_feeder_sp);
     if(_feeder_lines) {
         for(i = 0; i < _feeder_nb; ++i) {
             free(_feeder_lines[i].id);
@@ -40,17 +37,15 @@ void feeder_quit()
 
 bool feeder_set(const char* command)
 {
-    if(_feeder_setted)
-        spawn_close(&_feeder_sp);
-
+    spawn_close(&_feeder_sp);
     _feeder_sp = spawn_create_shell(command);
     curses_list_clear();
-    return (_feeder_setted = spawn_ok(_feeder_sp));
+    return spawn_ok(_feeder_sp);
 }
 
 int feeder_fd()
 {
-    if(_feeder_setted)
+    if(spawn_ok(_feeder_sp))
         return spawn_fd(_feeder_sp);
     else
         return -1;
@@ -93,7 +88,7 @@ void feeder_update()
     char* line;
     char* strtokbuf;
 
-    if(!_feeder_setted)
+    if(!spawn_ok(_feeder_sp))
         return;
 
     while((cont = spawn_read(_feeder_sp, buffer, 4095)) != 0) {
