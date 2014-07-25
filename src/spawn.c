@@ -59,6 +59,13 @@ spawn_t spawn_create_shell(const char* command)
     return sp;
 }
 
+spawn_t spawn_init()
+{
+    spawn_t sp;
+    sp.process = -1;
+    return sp;
+}
+
 bool spawn_ok(spawn_t sp)
 {
     return (sp.process >= 0);

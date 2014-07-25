@@ -16,6 +16,9 @@ typedef struct _spawn_t {
  */
 spawn_t spawn_create(char* const prog[]);
 
+/* Init a spawn structure so that spawn_ok(spawn_init()) returns false. */
+spawn_t spawn_init();
+
 /* Spawn a program and link its stdout to a pipe.
  * The program will be spawned using the default shell or /bin/sh if $SHELL is
  * not set.
