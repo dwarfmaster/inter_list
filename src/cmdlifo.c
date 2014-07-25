@@ -119,11 +119,6 @@ void cmdlifo_update()
         return;
     --nb;
 
-    if(spawn_ended(_cmdlifo_sps[nb].sp)) {
-        cmdlifo_pop();
-        cmdlifo_update();
-    }
-
     _cmdlifo_spawned = false;
     while((l = spawn_read(_cmdlifo_sps[nb].sp, buffer, 4095)) != 0) {
         buffer[l] = '\0';
