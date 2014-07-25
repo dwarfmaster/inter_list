@@ -3,6 +3,7 @@
 #define DEF_FEEDER
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 /* Init and free the feeder. */
 bool feeder_init();
@@ -16,6 +17,15 @@ int feeder_fd();
 
 /* Read data from the feeder and add it to the list. */
 void feeder_update();
+
+/* Get the id of the selection. */
+size_t feeder_get_id();
+
+/* Get the name of a line. Returns NULL if id is invalid. */
+const char* feeder_get_name(size_t id);
+
+/* Get the text of a line. Returns NULL if id is invalid. */
+const char* feeder_get_text(size_t id);
 
 #endif
 

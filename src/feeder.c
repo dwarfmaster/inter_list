@@ -2,7 +2,6 @@
 #include "feeder.h"
 #include "spawn.h"
 #include "curses.h"
-#include <stdlib.h>
 
 static spawn_t _feeder_sp;
 struct _feeder_line_t {
@@ -100,5 +99,26 @@ void feeder_update()
             line = strtok_r(NULL, "\n", &strtokbuf);
         }
     }
+}
+
+size_t feeder_get_id()
+{
+    return curses_list_get();
+}
+
+const char* feeder_get_name(size_t id)
+{
+    if(id >= _feeder_nb)
+        return NULL;
+    else
+        return _feeder_lines[id].id;
+}
+
+const char* feeder_get_text(size_t id)
+{
+    if(id >= _feeder_nb)
+        return NULL;
+    else
+        return _feeder_lines[id].line;
 }
 
