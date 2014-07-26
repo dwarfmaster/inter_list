@@ -20,6 +20,31 @@
 #define EVENTS_MOD_MASK  (EVENTS_MOD_SHIFT | EVENTS_MOD_CTRL \
         | EVENTS_MOD_ALTL | EVENTS_MOD_ALTR | EVENTS_MOD_SUPER)
 
+/* Special keys. */
+const char* _events_keys_name[] = {
+    "up",
+    "down",
+    "left",
+    "right",
+    "home",
+    "end",
+    "return",
+    "pagenext",
+    "pageprev",
+    NULL
+};
+int _events_keys_code[] = {
+    KEY_UP,
+    KEY_DOWN,
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_HOME,
+    KEY_END,
+    (int)'\n',
+    KEY_NPAGE,
+    KEY_PPAGE,
+};
+
 /* Comp event (<C-A-l> for example). */
 struct _events_comp_t {
     unsigned char mods;
@@ -284,6 +309,29 @@ bool events_add(const char* ev, const char* action)
     free(parsed);
     _events_cancel();
     return ret;
+}
+
+static int _events_name_to_key(const char* name)
+{
+    size_t i;
+    int key;
+    char* used = strdup(name);
+
+    for(i = 0; i < strlen(name); ++i) {
+        if(used[i] >= 'A' && used[i] <= 'Z')
+            used[i] = used[i] - 'A' + 'a';
+    }
+
+    key = -1;
+    for(i = 0; _events_keys_name[i]; ++i) {
+        if(strcmp(used, _events_keys_name[i]) == 0) {
+            key = _events_keys_code[i];
+            break;
+        }
+    }
+
+    free(used);
+    return key;
 }
 
 static void _events_set_list_symbols()
