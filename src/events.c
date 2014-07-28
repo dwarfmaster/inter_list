@@ -58,7 +58,7 @@ static size_t _events_comps_size;
 
 /* Seq event (abc for example). */
 struct _events_seq_t {
-    char* seq;
+    int* seq;
     bool use_prefix;
     char* prefix;
     strformat_t* action;
@@ -70,7 +70,7 @@ static size_t _events_seqs_size;
 static strformat_symbs_t* _events_sbs;
 
 /* Handling events. */
-static char _events_typed[EVENTS_MAX_SEQ];
+static int _events_typed[EVENTS_MAX_SEQ];
 static size_t _events_nb_typed;
 static bool _events_inprompt;
 static size_t _events_typ_min;
@@ -174,6 +174,7 @@ static bool _events_seq_insert(size_t pos, struct _events_seq_t elem)
             _events_seqs_capa = 0;
             return false;
         }
+        _events_seqs_capa = ncapa;
     }
 
     memmove(_events_seqs + pos + 1, _events_seqs + pos,
@@ -230,6 +231,92 @@ static bool _events_parse_comp(char* str, const char* action)
         return true;
 }
 
+static int _events_name_to_key(const char* name)
+{
+    size_t i;
+    int key;
+    char* used = strdup(name);
+
+    for(i = 0; i < strlen(name); ++i) {
+        if(used[i] >= 'A' && used[i] <= 'Z')
+            used[i] = used[i] - 'A' + 'a';
+    }
+
+    key = -1;
+    for(i = 0; _events_keys_name[i]; ++i) {
+        if(strcmp(used, _events_keys_name[i]) == 0) {
+            key = _events_keys_code[i];
+            break;
+        }
+    }
+
+    free(used);
+    return key;
+}
+
+static int* _events_parse_seq_string(const char* str)
+{
+    size_t i, j, size;
+    int* ret;
+    int key;
+    bool inspe;
+    char buffer[256];
+
+    size = 0;
+    ret = malloc(sizeof(int) * (strlen(str) + 1));
+    if(!ret)
+        return NULL;
+
+    inspe = false;
+    for(i = 0; i < strlen(str); ++i) {
+        if(!inspe && str[i] != '[') {
+            ret[size] = str[i];
+            ++size;
+        } else if(!inspe && str[i] == '[') {
+            j = 0;
+            inspe = true;
+        } else if(inspe && str[i] == ']') {
+            buffer[j] = '\0';
+            key = _events_name_to_key(buffer);
+            if(key >= 0) {
+                ret[size] = key;
+                ++size;
+            }
+            inspe = false;
+        } else {
+            buffer[j] = str[i];
+            ++j;
+        }
+    }
+    ret[size] = 0;
+    ++size;
+
+    /* Shrinking ret : can't fail. */
+    ret = realloc(ret, size * sizeof(int));
+    return ret;
+}
+
+static size_t _events_seqlen(int* sq)
+{
+    size_t l = 0;
+    while(sq[l++]);
+    return --l;
+}
+
+static int _events_seqcmp(int* sq1, int* sq2)
+{
+    size_t l1, l2, l, i;
+    l1 = _events_seqlen(sq1);
+    l2 = _events_seqlen(sq2);
+    l  = (l1 < l2 ? l1 : l2);
+
+    for(i = 0; i < l; ++i) {
+        if(sq1[i] != sq2[i])
+            return sq1[i] - sq2[i];
+    }
+    return l1 - l2;
+}
+
 static bool _events_parse_seq(char* str, const char* action)
 {
     char* strtokbuf;
@@ -247,7 +334,7 @@ static bool _events_parse_seq(char* str, const char* action)
         str = strtok_r(str, "<", &strtokbuf);
         if(!str || strlen(str) == 0)
             return false;
-        sq.seq = strdup(str);
+        sq.seq = _events_parse_seq_string(str);
         str = strtok_r(NULL, "", &strtokbuf);
         if(!str) {
             free(sq.seq);
@@ -257,11 +344,11 @@ static bool _events_parse_seq(char* str, const char* action)
         sq.use_prefix = true;
     }
     else
-        sq.seq = strdup(str);
+        sq.seq = _events_parse_seq_string(str);
 
     sq.action = strformat_parse(_events_sbs, action);
     for(i = 0; i < _events_seqs_size; ++i) {
-        if(strcmp(sq.seq, _events_seqs[i].seq) < 0)
+        if(_events_seqcmp(sq.seq, _events_seqs[i].seq) < 0)
             break;
     }
     if(!_events_seq_insert(i, sq)) {
@@ -309,29 +396,6 @@ bool events_add(const char* ev, const char* action)
     free(parsed);
     _events_cancel();
     return ret;
-}
-
-static int _events_name_to_key(const char* name)
-{
-    size_t i;
-    int key;
-    char* used = strdup(name);
-
-    for(i = 0; i < strlen(name); ++i) {
-        if(used[i] >= 'A' && used[i] <= 'Z')
-            used[i] = used[i] - 'A' + 'a';
-    }
-
-    key = -1;
-    for(i = 0; _events_keys_name[i]; ++i) {
-        if(strcmp(used, _events_keys_name[i]) == 0) {
-            key = _events_keys_code[i];
-            break;
-        }
-    }
-
-    free(used);
-    return key;
 }
 
 static void _events_set_list_symbols()
@@ -383,7 +447,7 @@ static void _events_process_seq(int ev)
     c   = (char)ev;
     off = _events_nb_typed;
     for(i = _events_typ_min; i < _events_typ_max; ++i) {
-        if(strlen(_events_seqs[i].seq) > off) {
+        if(_events_seqlen(_events_seqs[i].seq) > off) {
             if(_events_seqs[i].seq[off] < c)
                 ++_events_typ_min;
             else if(_events_seqs[i].seq[off] > c)
@@ -399,11 +463,11 @@ static void _events_process_seq(int ev)
     /* One event potentially matching. */
     else {
         _events_typed[off]     = c;
-        _events_typed[off + 1] = '\0';
+        _events_typed[off + 1] = 0;
         ++_events_nb_typed;
         for(i = _events_typ_min; i < _events_typ_max; ++i) {
             sq = _events_seqs[i];
-            if(strcmp(_events_typed, sq.seq) == 0) {
+            if(_events_seqcmp(_events_typed, sq.seq) == 0) {
                 if(sq.use_prefix) {
                     _events_inprompt = true;
                     curses_command_enter(sq.prefix);
