@@ -90,7 +90,7 @@ void feeder_update()
     if(!spawn_ok(_feeder_sp))
         return;
 
-    while((cont = spawn_read(_feeder_sp, buffer, 4095)) != 0) {
+    if((cont = spawn_read(_feeder_sp, buffer, 4095)) != 0) {
         buffer[cont] = '\0';
 
         line = strtok_r(buffer, "\n", &strtokbuf);
