@@ -439,18 +439,16 @@ static bool _events_process_comp(int ev)
 
 static void _events_process_seq(int ev)
 {
-    char c;
     size_t i;
     size_t off;
     struct _events_seq_t sq;
 
-    c   = (char)ev;
     off = _events_nb_typed;
     for(i = _events_typ_min; i < _events_typ_max; ++i) {
         if(_events_seqlen(_events_seqs[i].seq) > off) {
-            if(_events_seqs[i].seq[off] < c)
+            if(_events_seqs[i].seq[off] < ev)
                 ++_events_typ_min;
-            else if(_events_seqs[i].seq[off] > c)
+            else if(_events_seqs[i].seq[off] > ev)
                 --_events_typ_max;
         }
         else
@@ -462,7 +460,7 @@ static void _events_process_seq(int ev)
         _events_cancel();
     /* One event potentially matching. */
     else {
-        _events_typed[off]     = c;
+        _events_typed[off]     = ev;
         _events_typed[off + 1] = 0;
         ++_events_nb_typed;
         for(i = _events_typ_min; i < _events_typ_max; ++i) {
