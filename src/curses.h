@@ -13,6 +13,10 @@ bool curses_init();
 /* End the curses display. */
 bool curses_end();
 
+/* Enable/disable curses. */
+void curses_enable();
+void curses_disable();
+
 /* Mark everything to be redrawn. Nothing will be drawn to screen until the
  * next call to curses_draw.
  */

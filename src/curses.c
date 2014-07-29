@@ -15,6 +15,7 @@ static uint16_t _curses_term_width;
 static uint16_t _curses_term_height;
 static bool     _curses_term_resized;
 static bool     _curses_colors;
+static bool        _curses_enabled;
 
 /* The list. */
 static size_t       _curses_list_nb;
@@ -68,6 +69,7 @@ static bool _curses_init_ncurses()
     _curses_term_width   = COLS;
     _curses_term_height  = LINES;
     _curses_term_resized = false;
+    _curses_enabled      = true;
     return true;
 }
 
@@ -129,6 +131,24 @@ bool curses_end()
     if(_curses_bot_str)
         free(_curses_bot_str);
     return true;
+}
+
+void curses_enable()
+{
+    if(_curses_enabled)
+        return;
+    reset_prog_mode();
+    refresh();
+    _curses_enabled = true;
+}
+
+void curses_disable()
+{
+    if(!_curses_enabled)
+        return;
+    def_prog_mode();
+    endwin();
+    _curses_enabled = false;
 }
 
 void curses_redraw()
