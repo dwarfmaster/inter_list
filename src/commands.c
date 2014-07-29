@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/wait.h>
 
 static void _commands_up(const char* str, void* data)
 {
@@ -109,6 +110,30 @@ static void _commands_spawn(const char* str, void* data)
     cmdlifo_push(str);
 }
 
+static void _commands_term(const char* str, void* data)
+{
+    const char* shell;
+    pid_t pid;
+
+    if(data) { } /* avoid warnings. */
+    if(!str)
+        return;
+
+    curses_disable();
+    shell = getenv("SHELL");
+    if(!shell) shell = "sh";
+
+    pid = fork();
+    if(pid == 0) {
+        execl(shell, shell, "-c", str, NULL);
+        exit(0);
+    }
+    else if(pid > 0)
+        waitpid(pid, NULL, 0);
+
+    curses_enable();
+}
+
 static void _commands_refresh(const char* str, void* data)
 {
     if(data && str) { } /* avoid warnings */
@@ -126,6 +151,7 @@ void commands_setup(bool* cont)
     cmdparser_add_command("map",     &_commands_map,     NULL);
     cmdparser_add_command("feed",    &_commands_feed,    NULL);
     cmdparser_add_command("spawn",   &_commands_spawn,   NULL);
+    cmdparser_add_command("term",    &_commands_term,    NULL);
     cmdparser_add_command("refresh", &_commands_refresh, NULL);
 }
 
