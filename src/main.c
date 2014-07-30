@@ -10,6 +10,7 @@
 #include "cmdlifo.h"
 #include "feeder.h"
 #include "commands.h"
+#include "bars.h"
 
 static int _set_fds(fd_set* fds)
 {
@@ -51,12 +52,17 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    curses_top_set("Top string, near the sky !!");
-    curses_bot_set("Underling.");
     curses_top_colors(COLOR_WHITE, COLOR_BLUE);
     curses_bot_colors(COLOR_BLACK, COLOR_GREEN);
     curses_list_colors(COLOR_CYAN, COLOR_BLACK);
     curses_list_colors_sel(COLOR_RED, COLOR_YELLOW);
+
+    if(!bars_init()) {
+        printf("Couldn't init bars.\n");
+        return 1;
+    }
+    bars_top_set("");
+    bars_bot_set("");
 
     if(!cmdparser_init()) {
         printf("Couldn't init cmdparse.\n");
@@ -92,6 +98,7 @@ int main(int argc, char *argv[])
             cmdlifo_update();
         if(FD_ISSET(feeder_fd(), &fds))
             feeder_update();
+        bars_update();
         curses_draw();
     }
 
@@ -99,6 +106,7 @@ int main(int argc, char *argv[])
     feeder_quit();
     cmdlifo_quit();
     cmdparser_quit();
+    bars_quit();
     curses_end();
     return 0;
 }
