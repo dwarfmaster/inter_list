@@ -7,6 +7,7 @@
 #include "events.h"
 #include "cmdlifo.h"
 #include "feeder.h"
+#include "bars.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -140,6 +141,18 @@ static void _commands_refresh(const char* str, void* data)
     curses_redraw();
 }
 
+static void _commands_top(const char* str, void* data)
+{
+    if(data) { } /* avoid warnings */
+    bars_top_set(str);
+}
+
+static void _commands_bot(const char* str, void* data)
+{
+    if(data) { } /* avoid warnings */
+    bars_bot_set(str);
+}
+
 void commands_setup(bool* cont)
 {
     cmdparser_add_command("up",      &_commands_up,      NULL);
@@ -153,5 +166,7 @@ void commands_setup(bool* cont)
     cmdparser_add_command("spawn",   &_commands_spawn,   NULL);
     cmdparser_add_command("term",    &_commands_term,    NULL);
     cmdparser_add_command("refresh", &_commands_refresh, NULL);
+    cmdparser_add_command("top",     &_commands_top,     NULL);
+    cmdparser_add_command("bot",     &_commands_bot,     NULL);
 }
 
