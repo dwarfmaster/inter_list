@@ -21,6 +21,9 @@ void feeder_update();
 /* Get the id of the selection. */
 size_t feeder_get_id();
 
+/* Get the number of lines. */
+size_t feeder_get_lines();
+
 /* Get the name of a line. Returns NULL if id is invalid. */
 const char* feeder_get_name(size_t id);
 

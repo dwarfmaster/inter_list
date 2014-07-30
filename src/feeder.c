@@ -106,6 +106,11 @@ size_t feeder_get_id()
     return curses_list_get();
 }
 
+size_t feeder_get_lines()
+{
+    return _feeder_nb;
+}
+
 const char* feeder_get_name(size_t id)
 {
     if(id >= _feeder_nb)
