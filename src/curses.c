@@ -260,19 +260,25 @@ void curses_draw()
         _curses_cmd_mustdraw  = true;
     }
 
-    if(_curses_list_mustdraw) {
-        _curses_list_draw();
-        _curses_list_mustdraw = false;
-    }
-
     if(_curses_top_mustdraw) {
-        _curses_draw_line(_curses_top_str, 0, COLOR_TOP);
+        if(_curses_top_enable)
+            _curses_draw_line(_curses_top_str, 0, COLOR_TOP);
+        else
+            _curses_list_mustdraw = true;
         _curses_top_mustdraw = false;
     }
 
     if(_curses_bot_mustdraw) {
-        _curses_draw_line(_curses_bot_str, _curses_term_height - 2, COLOR_BOT);
+        if(_curses_bot_enable)
+            _curses_draw_line(_curses_bot_str, _curses_term_height - 2, COLOR_BOT);
+        else
+            _curses_list_mustdraw = true;
         _curses_bot_mustdraw = false;
+    }
+
+    if(_curses_list_mustdraw) {
+        _curses_list_draw();
+        _curses_list_mustdraw = false;
     }
 
     if(_curses_cmd_mustdraw) {
@@ -455,7 +461,8 @@ bool curses_top_set(const char* str)
     else {
         _curses_top_str = NULL;
         if(_curses_top_enable) {
-            _curses_top_enable = false;
+            _curses_top_enable   = false;
+            _curses_top_mustdraw = true;
             return true;
         }
     }
@@ -478,7 +485,8 @@ bool curses_bot_set(const char* str)
     else {
         _curses_bot_str = NULL;
         if(_curses_bot_enable) {
-            _curses_bot_enable = false;
+            _curses_bot_enable   = false;
+            _curses_bot_mustdraw = true;
             return true;
         }
     }
