@@ -31,9 +31,14 @@ bool bars_top_set(const char* br)
 {
     if(_bars_top)
         strformat_destroy(_bars_top);
-    _bars_top = strformat_parse(_bars_symbs, br);
-    if(!_bars_top)
-        return false;
+
+    if(!br)
+        _bars_top = NULL;
+    else {
+        _bars_top = strformat_parse(_bars_symbs, br);
+        if(!_bars_top)
+            return false;
+    }
     bars_update();
     return true;
 }
@@ -42,9 +47,14 @@ bool bars_bot_set(const char* br)
 {
     if(_bars_bot)
         strformat_destroy(_bars_bot);
-    _bars_bot = strformat_parse(_bars_symbs, br);
-    if(!_bars_bot)
-        return false;
+
+    if(!br)
+        _bars_bot = NULL;
+    else {
+        _bars_bot = strformat_parse(_bars_symbs, br);
+        if(!_bars_bot)
+            return false;
+    }
     bars_update();
     return true;
 }
@@ -65,7 +75,14 @@ void bars_update()
     strformat_set(_bars_symbs, 'n', feeder_get_name(i));
     strformat_set(_bars_symbs, 't', feeder_get_text(i));
 
-    curses_top_set(strformat_get(_bars_top));
-    curses_bot_set(strformat_get(_bars_bot));
+    if(_bars_top)
+        curses_top_set(strformat_get(_bars_top));
+    else
+        curses_top_set(NULL);
+
+    if(_bars_bot)
+        curses_bot_set(strformat_get(_bars_bot));
+    else
+        curses_top_set(NULL);
 }
 

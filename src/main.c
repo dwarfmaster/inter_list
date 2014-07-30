@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
         printf("Couldn't init bars.\n");
         return 1;
     }
-    bars_top_set("");
-    bars_bot_set("");
+    bars_top_set(NULL);
+    bars_bot_set(NULL);
 
     if(!cmdparser_init()) {
         printf("Couldn't init cmdparse.\n");
