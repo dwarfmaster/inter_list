@@ -113,25 +113,12 @@ static void _commands_spawn(const char* str, void* data)
 
 static void _commands_term(const char* str, void* data)
 {
-    const char* shell;
-    pid_t pid;
-
     if(data) { } /* avoid warnings. */
     if(!str)
         return;
 
     curses_disable();
-    shell = getenv("SHELL");
-    if(!shell) shell = "sh";
-
-    pid = fork();
-    if(pid == 0) {
-        execl(shell, shell, "-c", str, NULL);
-        exit(0);
-    }
-    else if(pid > 0)
-        waitpid(pid, NULL, 0);
-
+    spawn_exec_shell(str);
     curses_enable();
 }
 
