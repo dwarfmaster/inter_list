@@ -44,5 +44,11 @@ TODO
 TODO
 
 ## TODO-list
-TODO
+ - [ ] write a complete documentation.
+ - [ ] let the user configure colors.
+ - [ ] handle UTF-8.
+ - [ ] handle mouse.
+ - [ ] handle thread-based lists.
+ - [ ] add a search mecanism.
+ - [ ] handle combinaisons keybindings.
 
