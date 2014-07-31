@@ -25,6 +25,10 @@ spawn_t spawn_init();
  */
 spawn_t spawn_create_shell(const char* command);
 
+/* Spawn a process and wait for it to end. */
+bool spawn_exec(char* const prog[]);
+bool spawn_exec_shell(const char* command);
+
 /* Check if the spawn could be created. */
 bool spawn_ok(spawn_t sp);
 

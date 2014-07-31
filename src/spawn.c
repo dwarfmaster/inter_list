@@ -38,17 +38,18 @@ spawn_t spawn_create(char* const prog[])
     return sp;
 }
 
+static const char* _spawn_get_shell()
+{
+    const char* sh = getenv("SHELL");
+    return (sh ? sh : "/bin/sh");
+}
+
 spawn_t spawn_create_shell(const char* command)
 {
-    const char* shell;
     char* argv[4];
     spawn_t sp;
 
-    shell = getenv("SHELL");
-    if(!shell)
-        shell = "/bin/sh";
-
-    argv[0] = strdup(shell);
+    argv[0] = strdup(_spawn_get_shell());
     argv[1] = "-c";
     argv[2] = strdup(command);
     argv[3] = NULL;
@@ -57,6 +58,32 @@ spawn_t spawn_create_shell(const char* command)
     free(argv[0]);
     free(argv[2]);
     return sp;
+}
+
+bool spawn_exec(char* const prog[])
+{
+    pid_t pid = vfork();
+
+    if(pid < 0)
+        return false;
+    else if(pid == 0) {
+        execv(prog[0], prog);
+        exit(0);
+    }
+    else
+        waitpid(pid, NULL, 0);
+
+    return true;
+}
+
+bool spawn_exec_shell(const char* command)
+{
+    char* argv[4];
+    argv[0] = strdup(_spawn_get_shell());
+    argv[1] = "-c";
+    argv[2] = strdup(command);
+    argv[3] = NULL;
+    return spawn_exec(argv);
 }
 
 spawn_t spawn_init()
