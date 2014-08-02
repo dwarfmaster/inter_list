@@ -4,6 +4,7 @@
 #include "cmdparser.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 struct _cmdlifo_sp_t {
     spawn_t sp;
@@ -67,11 +68,16 @@ static bool _cmdlifo_parse_buffer(char* buffer)
 
     line = strtok_r(buffer, "\n", &strtokbuf);
     while(line) {
+        fprintf(stderr, "[%li] %s\n", _cmdlifo_nb, line);
         cmdparser_parse(line);
         if(_cmdlifo_spawned) {
             line = strtok_r(NULL, "", &strtokbuf);
+            if(_cmdlifo_sps[nb].buffer)
+                free(_cmdlifo_sps[nb].buffer);
             if(line)
                 _cmdlifo_sps[nb].buffer = strdup(line);
+            else
+                _cmdlifo_sps[nb].buffer = NULL;
             _cmdlifo_spawned = false;
             return false;
         }
@@ -94,9 +100,12 @@ void cmdlifo_pop()
     if(_cmdlifo_nb != 0) {
         spawn_resume(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
         if(_cmdlifo_sps[_cmdlifo_nb - 1].buffer) {
+            _cmdlifo_spawned = false;
             _cmdlifo_parse_buffer(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
-            free(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
-            _cmdlifo_sps[_cmdlifo_nb - 1].buffer = NULL;
+            if(!_cmdlifo_spawned) {
+                free(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
+                _cmdlifo_sps[_cmdlifo_nb - 1].buffer = NULL;
+            }
         }
     }
 }
