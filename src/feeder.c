@@ -36,9 +36,18 @@ void feeder_quit()
 
 bool feeder_set(const char* command)
 {
+    size_t i;
     spawn_close(&_feeder_sp);
-    _feeder_sp = spawn_create_shell(command);
+    if(_feeder_lines) {
+        for(i = 0; i < _feeder_nb; ++i) {
+            free(_feeder_lines[i].id);
+            free(_feeder_lines[i].line);
+        }
+    }
+    _feeder_nb = 0;
     curses_list_clear();
+
+    _feeder_sp = spawn_create_shell(command);
     return spawn_ok(_feeder_sp);
 }
 
