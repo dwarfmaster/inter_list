@@ -15,7 +15,7 @@ static uint16_t _curses_term_width;
 static uint16_t _curses_term_height;
 static bool     _curses_term_resized;
 static bool     _curses_colors;
-static bool        _curses_enabled;
+static bool     _curses_enabled;
 
 /* The list. */
 static size_t       _curses_list_nb;
@@ -170,6 +170,8 @@ static void _curses_draw_line(const char* text, unsigned int y, int cp)
         mvaddch(y, i, ' ');
 
     /* Print the text. */
+    if(strlen(text) == 0)
+        return;
     txt = strdup(text);
     if(strlen(txt) > _curses_term_width)
         txt[_curses_term_width] = '\0';
@@ -204,7 +206,8 @@ static void _curses_list_draw_line(unsigned int id)
         cp = COLOR_LST;
 
     y = id - _curses_list_first + (_curses_top_enable ? 1 : 0);
-    if(strlen(_curses_list_lines[id]) <= _curses_list_offset)
+    if(id >= _curses_list_nb
+            || strlen(_curses_list_lines[id]) <= _curses_list_offset)
         _curses_draw_line("", y, cp);
     else
         _curses_draw_line(_curses_list_lines[id] + _curses_list_offset, y, cp);
@@ -216,9 +219,6 @@ static void _curses_list_draw()
     unsigned int lines;
 
     lines = _curses_list_height();
-    if(_curses_list_first + lines >= _curses_list_nb)
-        lines = _curses_list_nb - _curses_list_first;
-
     for(i = 0; i < lines; ++i) {
         id = i + _curses_list_first;
         _curses_list_draw_line(id);
