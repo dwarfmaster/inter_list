@@ -49,6 +49,18 @@ static void _commands_right(const char* str, void* data)
     curses_list_right(right);
 }
 
+static void _commands_begin(const char* str, void* data)
+{
+    if(data && str) { } /* avoid warnings */
+    curses_list_set(0);
+}
+
+static void _commands_end(const char* str, void* data)
+{
+    if(data && str) { } /* avoid warnings */
+    curses_list_set(feeder_get_lines() - 1);
+}
+
 static void _commands_quit(const char* str, void* data)
 {
     if(str) { } /* avoid warnings */
@@ -146,12 +158,16 @@ void commands_setup(bool* cont)
     cmdparser_add_command("down",    &_commands_down,    NULL);
     cmdparser_add_command("right",   &_commands_right,   NULL);
     cmdparser_add_command("left",    &_commands_left,    NULL);
+    cmdparser_add_command("begin",   &_commands_begin,   NULL);
+    cmdparser_add_command("end",     &_commands_end,     NULL);
+
     cmdparser_add_command("quit",    &_commands_quit,    cont);
     cmdparser_add_command("exe",     &_commands_exe,     NULL);
     cmdparser_add_command("map",     &_commands_map,     NULL);
     cmdparser_add_command("feed",    &_commands_feed,    NULL);
     cmdparser_add_command("spawn",   &_commands_spawn,   NULL);
     cmdparser_add_command("term",    &_commands_term,    NULL);
+
     cmdparser_add_command("refresh", &_commands_refresh, NULL);
     cmdparser_add_command("top",     &_commands_top,     NULL);
     cmdparser_add_command("bot",     &_commands_bot,     NULL);

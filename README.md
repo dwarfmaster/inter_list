@@ -21,6 +21,8 @@ separated by newlines.
  - down  [nb]  : move the selection down nb lines. nb defaults to 1.
  - right [nb]  : move the lines right nb characters. nb defaults to 1.
  - left  [nb]  : move the lines left nb characters. nb defaults to 1.
+ - begin       : move the selection to the first line.
+ - end         : move the selection to the last line.
  - quit        : end the program.
  - exe str     : str will be parsed as a command.
  - map key cmd : cmd will be executed when key combinaison is pressed. See
