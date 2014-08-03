@@ -43,12 +43,12 @@ bool curses_list_add_lines(size_t nb, const char** lines);
 /* Move the selection downward by nb steps. Returns false if it reached the
  * end.
  */
-bool curses_list_down(unsigned int nb);
+bool curses_list_down(size_t nb);
 
 /* Move the selection upward by nb steps. Returns false if it reached the
  * begginig.
  */
-bool curses_list_up(unsigned int nb);
+bool curses_list_up(size_t nb);
 
 /* Get the number of the selected line. */
 size_t curses_list_get();
@@ -57,12 +57,12 @@ size_t curses_list_get();
 bool curses_list_set(size_t nb);
 
 /* Move the screen to the right by nb chars. */
-void curses_list_right(unsigned int nb);
+void curses_list_right(size_t nb);
 
 /* Move the screen to the left by nb chars. Returns left if it reached the
  * beggining.
  */
-bool curses_list_left(unsigned int nb);
+bool curses_list_left(size_t nb);
 
 /* Reset the list to the left. */
 void curses_list_offset_reset();

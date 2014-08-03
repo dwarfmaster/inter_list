@@ -15,37 +15,37 @@
 
 static void _commands_up(const char* str, void* data)
 {
-    unsigned int up = 1;
+    size_t up = 1;
     if(data) { } /* avoid warnings */
     if(str)
-        sscanf(str, "%u", &up);
+        sscanf(str, "%lu", &up);
     curses_list_up(up);
 }
 
 static void _commands_down(const char* str, void* data)
 {
-    unsigned int down = 1;
+    size_t down = 1;
     if(data) { } /* avoid warnings */
     if(str)
-        sscanf(str, "%u", &down);
+        sscanf(str, "%lu", &down);
     curses_list_down(down);
 }
 
 static void _commands_left(const char* str, void* data)
 {
-    unsigned int left = 1;
+    size_t left = 1;
     if(data) { } /* avoid warnings */
     if(str)
-        sscanf(str, "%u", &left);
+        sscanf(str, "%lu", &left);
     curses_list_left(left);
 }
 
 static void _commands_right(const char* str, void* data)
 {
-    unsigned int right = 1;
+    size_t right = 1;
     if(data) { } /* avoid warnings */
     if(str)
-        sscanf(str, "%u", &right);
+        sscanf(str, "%lu", &right);
     curses_list_right(right);
 }
 

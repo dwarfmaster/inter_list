@@ -344,7 +344,7 @@ bool curses_list_add_lines(size_t nb, const char** lines)
     return true;
 }
 
-bool curses_list_down(unsigned int nb)
+bool curses_list_down(size_t nb)
 {
     size_t savesel = _curses_list_sel;
     bool ret = true;
@@ -368,7 +368,7 @@ bool curses_list_down(unsigned int nb)
     return ret;
 }
 
-bool curses_list_up(unsigned int nb)
+bool curses_list_up(size_t nb)
 {
     size_t savesel = _curses_list_sel;
     bool ret = true;
@@ -417,13 +417,13 @@ bool curses_list_set(size_t nb)
     return true;
 }
 
-void curses_list_right(unsigned int nb)
+void curses_list_right(size_t nb)
 {
     _curses_list_offset  += nb;
     _curses_list_mustdraw = true;
 }
 
-bool curses_list_left(unsigned int nb)
+bool curses_list_left(size_t nb)
 {
     bool ret;
     if(_curses_list_offset < nb) {
