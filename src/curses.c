@@ -350,7 +350,10 @@ bool curses_list_down(size_t nb)
     bool ret = true;
     _curses_list_sel += nb;
     if(_curses_list_sel >= _curses_list_nb) {
-        _curses_list_sel = _curses_list_nb - 1;
+        if(_curses_list_nb > 0)
+            _curses_list_sel = _curses_list_nb - 1;
+        else
+            _curses_list_sel = 0;
         ret = false;
     }
 
