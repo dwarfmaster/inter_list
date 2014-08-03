@@ -17,27 +17,32 @@ of commands (see next paragraph for available commands). The commands must be
 separated by newlines.
 
 ## Available commands.
- - up    [nb]  : move the selection up nb lines. nb defaults to 1.
- - down  [nb]  : move the selection down nb lines. nb defaults to 1.
- - right [nb]  : move the lines right nb characters. nb defaults to 1.
- - left  [nb]  : move the lines left nb characters. nb defaults to 1.
- - begin       : move the selection to the first line.
- - end         : move the selection to the last line.
- - quit        : end the program.
- - exe str     : str will be parsed as a command.
- - map key cmd : cmd will be executed when key combinaison is pressed. See
+ - `up    [nb]`  : move the selection up nb lines. nb defaults to 1.
+ - `down  [nb]`  : move the selection down nb lines. nb defaults to 1.
+ - `right [nb]`  : move the lines right nb characters. nb defaults to 1.
+ - `left  [nb]`  : move the lines left nb characters. nb defaults to 1.
+ - `begin`       : move the selection to the first line.
+ - `end`         : move the selection to the last line.
+ - `quit`        : end the program.
+ - `exe str`     : str will be parsed as a command.
+ - `map key cmd` : cmd will be executed when key combinaison is pressed. See
                  keybinds paragraph for details of the syntax of key.
- - feed prog   : prog must the path to a program which will be spawned. Its
+ - `feed prog`   : prog must the path to a program which will be spawned. Its
                  stdout will be used to populate the list contents. See the
                  feeding paragraph for details on how its output must be
                  formatted.
- - spawn prog  : will spawn prog and read its output as a set of commands.
- - term prog   : prog will be spawned in a shell escape. It's stdout will be
+ - `spawn prog`  : will spawn prog and read its output as a set of commands.
+ - `term prog`   : prog will be spawned in a shell escape. It's stdout will be
                  displayed to the used.
- - refresh     : redraw the screen.
- - top [str]   : set the contents of the top bar. If there is not str, the top
-                 bar will be disabled.
- - bot [str]   : work the same as the top command, but for the bottom bar.
+ - `refresh`     : redraw the screen.
+ - `top [str]`   : set the contents of the top bar. If there is not str, the
+                   top bar will be disabled.
+ - `bot [str]`   : work the same as the top command, but for the bottom bar.
+ - `color [part] [fg] [bg]` : define the background and foreground colors of a
+                            part of the interface. part can be either `top`,
+                            `bot`, `lst` or `sel`. `fg` and `bg` are colors,
+                            so they can be the name of any of the eight colors
+                            supported by ncurses.
 
 ## Keybinds.
 TODO

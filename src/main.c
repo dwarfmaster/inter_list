@@ -52,11 +52,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    curses_top_colors(COLOR_WHITE, COLOR_BLUE);
-    curses_bot_colors(COLOR_BLACK, COLOR_GREEN);
-    curses_list_colors(COLOR_CYAN, COLOR_BLACK);
-    curses_list_colors_sel(COLOR_RED, COLOR_YELLOW);
-
     if(!bars_init()) {
         printf("Couldn't init bars.\n");
         return 1;

@@ -152,6 +152,36 @@ static void _commands_bot(const char* str, void* data)
     bars_bot_set(str);
 }
 
+static void _commands_color(const char* str, void* data)
+{
+    char* strtokbuf;
+    char* part;
+    char* fg;
+    char* bg;
+    char* used;
+    if(data) { } /* avoid warnings */
+
+    used = strdup(str);
+    part = strtok_r(used, " ", &strtokbuf);
+    fg   = strtok_r(NULL, " ", &strtokbuf);
+    bg   = strtok_r(NULL, " ", &strtokbuf);
+    if(!part || !fg || !bg) {
+        free(used);
+        return;
+    }
+
+    if(strcmp(part, "top") == 0)
+        curses_top_colors(curses_str_to_color(fg), curses_str_to_color(bg));
+    else if(strcmp(part, "bot") == 0)
+        curses_bot_colors(curses_str_to_color(fg), curses_str_to_color(bg));
+    else if(strcmp(part, "lst") == 0)
+        curses_list_colors(curses_str_to_color(fg), curses_str_to_color(bg));
+    else if(strcmp(part, "sel") == 0)
+        curses_list_colors_sel(curses_str_to_color(fg),
+                curses_str_to_color(bg));
+    free(used);
+}
+
 void commands_setup(bool* cont)
 {
     cmdparser_add_command("up",      &_commands_up,      NULL);
@@ -171,5 +201,6 @@ void commands_setup(bool* cont)
     cmdparser_add_command("refresh", &_commands_refresh, NULL);
     cmdparser_add_command("top",     &_commands_top,     NULL);
     cmdparser_add_command("bot",     &_commands_bot,     NULL);
+    cmdparser_add_command("color",   &_commands_color,   NULL);
 }
 
