@@ -48,11 +48,23 @@ separated by newlines.
 TODO
 
 ## Feeding
-TODO
+The feeding is the act of populating the list. It is done by a program setted
+by the `feed` command. The feeding program must output a list of entries, one
+in each line of its output. Each entry must include two parts, separated by a
+tabulation. The first part, which won't be displayed in the list, is the name
+of the entry. It cannot contain tabulations. It is used to refer to the entry
+on the list. The second part is the string displayed in the list. It can
+contains tabulations.
+
+No sorting of any sort will be done : the entries will be displayed in the
+order they are outputed by the feeding program.
+
+Using the feed command while there already was a feeding program setted will
+clear the list before setting the new feeding program.
 
 ## TODO-list
  - [ ] write a complete documentation.
- - [ ] let the user configure colors.
+ - [X] let the user configure colors.
  - [ ] handle UTF-8.
  - [ ] handle mouse.
  - [ ] handle thread-based lists.
