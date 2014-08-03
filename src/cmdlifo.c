@@ -4,7 +4,6 @@
 #include "cmdparser.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 struct _cmdlifo_sp_t {
     spawn_t sp;
@@ -75,7 +74,6 @@ static bool _cmdlifo_parse_buffer(char* buffer)
 
     line = strtok_r(buffer, "\n", &strtokbuf);
     while(line) {
-        fprintf(stderr, "[%lu] %s\n", _cmdlifo_nb, line);
         cmdparser_parse(line);
         if(_cmdlifo_spawned) {
             line = strtok_r(NULL, "", &strtokbuf);
