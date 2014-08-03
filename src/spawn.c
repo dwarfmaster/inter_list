@@ -78,12 +78,18 @@ bool spawn_exec(char* const prog[])
 
 bool spawn_exec_shell(const char* command)
 {
+    bool ret;
     char* argv[4];
+
     argv[0] = strdup(_spawn_get_shell());
     argv[1] = "-c";
     argv[2] = strdup(command);
     argv[3] = NULL;
-    return spawn_exec(argv);
+    ret = spawn_exec(argv);
+
+    free(argv[0]);
+    free(argv[2]);
+    return ret;
 }
 
 spawn_t spawn_init()
