@@ -64,6 +64,7 @@ static bool _cmdlifo_parse_buffer(char* buffer)
 {
     char* line;
     char* strtokbuf;
+    char* bufptr;
     size_t nb = _cmdlifo_nb - 1;
 
     line = strtok_r(buffer, "\n", &strtokbuf);
@@ -72,12 +73,13 @@ static bool _cmdlifo_parse_buffer(char* buffer)
         cmdparser_parse(line);
         if(_cmdlifo_spawned) {
             line = strtok_r(NULL, "", &strtokbuf);
-            if(_cmdlifo_sps[nb].buffer)
-                free(_cmdlifo_sps[nb].buffer);
+            bufptr = _cmdlifo_sps[nb].buffer;
             if(line)
                 _cmdlifo_sps[nb].buffer = strdup(line);
             else
                 _cmdlifo_sps[nb].buffer = NULL;
+            if(bufptr)
+                free(bufptr);
             _cmdlifo_spawned = false;
             return false;
         }
