@@ -25,6 +25,20 @@ void curses_redraw();
 /* Draw the changes on screen. */
 void curses_draw();
 
+/* Get the color corresponding to a string. The value of str must be one of the
+ * following values :
+ *  - black
+ *  - red
+ *  - green
+ *  - yellow
+ *  - blue
+ *  - magenta
+ *  - cyan
+ *  - white
+ * If it is any other value, the black color is returned.
+ */
+int curses_str_to_color(const char* str);
+
 /********************* List handling abilities *******************************/
 /* Define the colors for the list. */
 void curses_list_colors(int fg, int bg);

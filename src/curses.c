@@ -270,7 +270,8 @@ void curses_draw()
 
     if(_curses_bot_mustdraw) {
         if(_curses_bot_enable)
-            _curses_draw_line(_curses_bot_str, _curses_term_height - 2, COLOR_BOT);
+            _curses_draw_line(_curses_bot_str,
+                    _curses_term_height - 2, COLOR_BOT);
         else
             _curses_list_mustdraw = true;
         _curses_bot_mustdraw = false;
@@ -295,6 +296,28 @@ void curses_draw()
     }
 
     refresh();
+}
+
+int curses_str_to_color(const char* str)
+{
+    if(strcmp(str, "black") == 0)
+        return COLOR_BLACK;
+    else if(strcmp(str, "red") == 0)
+        return COLOR_RED;
+    else if(strcmp(str, "green") == 0)
+        return COLOR_GREEN;
+    else if(strcmp(str, "yellow") == 0)
+        return COLOR_YELLOW;
+    else if(strcmp(str, "blue") == 0)
+        return COLOR_BLUE;
+    else if(strcmp(str, "magenta") == 0)
+        return COLOR_MAGENTA;
+    else if(strcmp(str, "cyan") == 0)
+        return COLOR_CYAN;
+    else if(strcmp(str, "white") == 0)
+        return COLOR_WHITE;
+    else
+        return COLOR_BLACK;
 }
 
 /********************* List handling abilities *******************************/
