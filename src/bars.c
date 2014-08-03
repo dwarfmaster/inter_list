@@ -65,11 +65,11 @@ void bars_update()
     char buffer[256];
 
     i = feeder_get_id();
-    snprintf(buffer, 256, "%li", i + 1);
+    snprintf(buffer, 256, "%lu", i + 1);
     strformat_set(_bars_symbs, 'i', buffer);
 
     nb = feeder_get_lines();
-    snprintf(buffer, 256, "%li", nb);
+    snprintf(buffer, 256, "%lu", nb);
     strformat_set(_bars_symbs, 'I', buffer);
 
     strformat_set(_bars_symbs, 'n', feeder_get_name(i));

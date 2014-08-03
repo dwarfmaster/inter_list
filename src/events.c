@@ -404,7 +404,7 @@ static void _events_set_list_symbols()
     char buffer[256];
 
     id = feeder_get_id();
-    snprintf(buffer, 256, "%li", id);
+    snprintf(buffer, 256, "%lu", id);
     strformat_set(_events_sbs, 'i', buffer);
     strformat_set(_events_sbs, 'n', feeder_get_name(id));
     strformat_set(_events_sbs, 't', feeder_get_text(id));

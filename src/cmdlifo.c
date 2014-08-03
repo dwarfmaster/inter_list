@@ -69,7 +69,7 @@ static bool _cmdlifo_parse_buffer(char* buffer)
 
     line = strtok_r(buffer, "\n", &strtokbuf);
     while(line) {
-        fprintf(stderr, "[%li] %s\n", _cmdlifo_nb, line);
+        fprintf(stderr, "[%lu] %s\n", _cmdlifo_nb, line);
         cmdparser_parse(line);
         if(_cmdlifo_spawned) {
             line = strtok_r(NULL, "", &strtokbuf);
