@@ -46,8 +46,13 @@ bool cmdlifo_push(const char* cmd)
             return false;
     }
 
-    if(_cmdlifo_nb != 0)
-        spawn_pause(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
+    if(_cmdlifo_nb != 0) {
+        if(!spawn_ended(_cmdlifo_sps[_cmdlifo_nb - 1].sp))
+            spawn_pause(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
+        else
+            spawn_close(&_cmdlifo_sps[_cmdlifo_nb - 1].sp);
+    }
+
     _cmdlifo_sps[_cmdlifo_nb].sp     = spawn_create_shell(cmd);
     _cmdlifo_sps[_cmdlifo_nb].buffer = NULL;
     if(!spawn_ok(_cmdlifo_sps[_cmdlifo_nb].sp)) {
@@ -66,6 +71,7 @@ static bool _cmdlifo_parse_buffer(char* buffer)
     char* strtokbuf;
     char* bufptr;
     size_t nb = _cmdlifo_nb - 1;
+    _cmdlifo_spawned = false;
 
     line = strtok_r(buffer, "\n", &strtokbuf);
     while(line) {
@@ -100,15 +106,20 @@ void cmdlifo_pop()
         free(_cmdlifo_sps[_cmdlifo_nb].buffer);
 
     if(_cmdlifo_nb != 0) {
-        spawn_resume(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
+        if(spawn_ok(_cmdlifo_sps[_cmdlifo_nb - 1].sp))
+            spawn_resume(_cmdlifo_sps[_cmdlifo_nb - 1].sp);
+
         if(_cmdlifo_sps[_cmdlifo_nb - 1].buffer) {
-            _cmdlifo_spawned = false;
-            _cmdlifo_parse_buffer(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
-            if(!_cmdlifo_spawned) {
+            if(_cmdlifo_parse_buffer(_cmdlifo_sps[_cmdlifo_nb - 1].buffer)) {
                 free(_cmdlifo_sps[_cmdlifo_nb - 1].buffer);
                 _cmdlifo_sps[_cmdlifo_nb - 1].buffer = NULL;
             }
+            else
+                return;
         }
+
+        if(spawn_ended(_cmdlifo_sps[_cmdlifo_nb - 1].sp))
+            cmdlifo_pop();
     }
 }
 
@@ -130,7 +141,6 @@ void cmdlifo_update()
         return;
     --nb;
 
-    _cmdlifo_spawned = false;
     while((l = spawn_read(_cmdlifo_sps[nb].sp, buffer, 4095)) != 0) {
         buffer[l] = '\0';
         if(!_cmdlifo_parse_buffer(buffer))
