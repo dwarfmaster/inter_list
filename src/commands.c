@@ -61,6 +61,16 @@ static void _commands_end(const char* str, void* data)
     curses_list_set(feeder_get_lines() - 1);
 }
 
+static void _commands_goto(const char* str, void* data)
+{
+    size_t pos;
+    if(data) { } /* avoid warnings */
+    if(!str)
+        return;
+    sscanf(str, "%lu", &pos);
+    curses_list_set(pos - 1);
+}
+
 static void _commands_quit(const char* str, void* data)
 {
     if(str) { } /* avoid warnings */
@@ -190,6 +200,7 @@ void commands_setup(bool* cont)
     cmdparser_add_command("left",    &_commands_left,    NULL);
     cmdparser_add_command("begin",   &_commands_begin,   NULL);
     cmdparser_add_command("end",     &_commands_end,     NULL);
+    cmdparser_add_command("goto",    &_commands_goto,    NULL);
 
     cmdparser_add_command("quit",    &_commands_quit,    cont);
     cmdparser_add_command("exe",     &_commands_exe,     NULL);

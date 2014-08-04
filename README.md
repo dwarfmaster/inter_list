@@ -23,6 +23,8 @@ separated by newlines.
  - `left  [nb]`  : move the lines left nb characters. nb defaults to 1.
  - `begin`       : move the selection to the first line.
  - `end`         : move the selection to the last line.
+ - `goto  [nb]`  : move the selection to le nb-eme line. If nb is out of range,
+                 the selection won't be moved.
  - `quit`        : end the program.
  - `exe str`     : str will be parsed as a command.
  - `map key cmd` : cmd will be executed when key combinaison is pressed. See
