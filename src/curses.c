@@ -423,7 +423,7 @@ size_t curses_list_get()
 bool curses_list_set(size_t nb)
 {
     size_t savesel = _curses_list_sel;
-    size_t off;
+    size_t height;
     if(nb >= _curses_list_nb)
         return false;
     _curses_list_sel = nb;
@@ -432,11 +432,13 @@ bool curses_list_set(size_t nb)
         _curses_list_draw_line(savesel);
         _curses_list_draw_line(_curses_list_sel);
     } else {
-        off = _curses_list_height() / 2;
-        if(off < _curses_list_first)
-            _curses_list_first = _curses_list_sel - off;
-        else
+        height = _curses_list_height();
+        if(_curses_list_sel < height / 2)
             _curses_list_first = 0;
+        else if(_curses_list_nb - _curses_list_sel < height / 2)
+            _curses_list_first = _curses_list_nb - height;
+        else
+            _curses_list_first = _curses_list_sel - height / 2;
         _curses_list_mustdraw = true;
     }
 
