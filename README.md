@@ -64,6 +64,16 @@ order they are outputed by the feeding program.
 Using the feed command while there already was a feeding program setted will
 clear the list before setting the new feeding program.
 
+## Examples
+The examples are here to show how to write scripts to use this program. For the
+moment, there is only one. To execute it, you must launch the program with the
+path `examples/files/list.pl`, and then the directory you want to browse. The
+content of the directory will be displayed. You can move around with the arroy
+key and the `return` key to open a file. If the file is a directory, its
+content will be displayed. If it is a regular file, it will be opened with vim.
+You can change the action when opening a file by editing the
+`examples/files/open.pl` script.
+
 ## TODO-list
  - [ ] write a complete documentation.
  - [X] let the user configure colors.
