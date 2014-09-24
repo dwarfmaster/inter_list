@@ -77,7 +77,7 @@ You can change the action when opening a file by editing the
 ## TODO-list
  - [ ] write a complete documentation.
  - [X] let the user configure colors.
- - [ ] handle UTF-8.
+ - [X] handle UTF-8.
  - [ ] handle mouse.
  - [ ] handle thread-based lists.
  - [ ] add a search mecanism.

@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <sys/select.h>
+#include <locale.h>
 #include "spawn.h"
 #include "strformat.h"
 #include "curses.h"
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
         printf("Too few arguments.\n");
         return 1;
     }
+    setlocale(LC_ALL, "");
 
     cmd[0] = '\0';
     size = 4095;

@@ -175,7 +175,7 @@ static void _curses_draw_line(const char* text, unsigned int y, int cp)
     txt = strdup(text);
     if(strlen(txt) > _curses_term_width)
         txt[_curses_term_width] = '\0';
-    mvprintw(y, 0, "%s", txt);
+    mvaddstr(y, 0, txt);
     free(txt);
 }
 
