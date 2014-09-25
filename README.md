@@ -38,7 +38,11 @@ separated by newlines.
                  displayed to the used.
  - `refresh`     : redraw the screen.
  - `top [str]`   : set the contents of the top bar. If there is not str, the
-                   top bar will be disabled.
+                   top bar will be disabled. There are symbols which will
+                   replaced by values : `%i` will be replaced by the index
+                   of the selected entry, `%I` will be replaced by the number
+                   of entries, `%n` will be replaced by the name of the
+                   selected entry and `%t` by its text.
  - `bot [str]`   : work the same as the top command, but for the bottom bar.
  - `color [part] [fg] [bg]` : define the background and foreground colors of a
                             part of the interface. part can be either `top`,
