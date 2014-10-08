@@ -25,6 +25,12 @@ separated by newlines.
  - `end`         : move the selection to the last line.
  - `goto  [nb]`  : move the selection to le nb-eme line. If nb is out of range,
                  the selection won't be moved.
+ - `scroll mode` : set the scroll mode. mode must be either `pager` or `list`.
+                   If the scroll mode is `pager`, the list elements will be
+                   displayed page by page : when reaching the bottom of the
+                   screen, the selection will be placed on the top of the
+                   screen and new lines will be displayed, while in `list`
+                   mode, there will be a simple scrolling.
  - `quit`        : end the program.
  - `exe str`     : str will be parsed as a command.
  - `map key cmd` : cmd will be executed when key combinaison is pressed. See

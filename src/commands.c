@@ -71,6 +71,17 @@ static void _commands_goto(const char* str, void* data)
     curses_list_set(pos - 1);
 }
 
+static void _commands_scroll(const char* str, void* data)
+{
+    if(data) { } /* avoid warnings */
+    if(!str)
+        return;
+    if(strcmp(str, "pager") == 0)
+        curses_list_set_mode(true);
+    else if(strcmp(str, "list") == 0)
+        curses_list_set_mode(false);
+}
+
 static void _commands_quit(const char* str, void* data)
 {
     if(str) { } /* avoid warnings */
@@ -201,6 +212,7 @@ void commands_setup(bool* cont)
     cmdparser_add_command("begin",   &_commands_begin,   NULL);
     cmdparser_add_command("end",     &_commands_end,     NULL);
     cmdparser_add_command("goto",    &_commands_goto,    NULL);
+    cmdparser_add_command("scroll",  &_commands_scroll,  NULL);
 
     cmdparser_add_command("quit",    &_commands_quit,    cont);
     cmdparser_add_command("exe",     &_commands_exe,     NULL);

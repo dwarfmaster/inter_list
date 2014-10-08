@@ -24,6 +24,7 @@ static const char** _curses_list_lines;
 static size_t       _curses_list_first;
 static size_t       _curses_list_sel;
 static size_t       _curses_list_offset;
+static bool         _curses_list_pager;
 static bool         _curses_list_mustdraw;
 
 /* Top and bottom bars. */
@@ -91,6 +92,7 @@ bool curses_init()
     _curses_list_sel      = 0;
     _curses_list_first    = 0;
     _curses_list_offset   = 0;
+    _curses_list_pager    = false;
     _curses_list_lines    = malloc(sizeof(char*) * 10);
     if(!_curses_list_lines)
         return false;
@@ -384,10 +386,12 @@ bool curses_list_down(size_t nb)
         _curses_list_draw_line(savesel);
         _curses_list_draw_line(_curses_list_sel);
     } else {
-        if(_curses_list_height() <= _curses_list_sel)
-            _curses_list_first = _curses_list_sel - _curses_list_height() + 1;
-        else
+        if(_curses_list_height() > _curses_list_sel)
             _curses_list_first = 0;
+        else if(_curses_list_pager)
+            _curses_list_first = _curses_list_sel;
+        else
+            _curses_list_first = _curses_list_sel - _curses_list_height() + 1;
         _curses_list_mustdraw = true;
     }
 
@@ -409,7 +413,15 @@ bool curses_list_up(size_t nb)
         _curses_list_draw_line(savesel);
         _curses_list_draw_line(_curses_list_sel);
     } else {
-        _curses_list_first = _curses_list_sel;
+        if(_curses_list_pager) {
+            if(_curses_list_height() > _curses_list_sel)
+                _curses_list_first = 0;
+            else {
+                _curses_list_first = _curses_list_sel
+                    - _curses_list_height() + 1;
+            }
+        } else
+            _curses_list_first = _curses_list_sel;
         _curses_list_mustdraw = true;
     }
     return ret;
@@ -470,6 +482,11 @@ void curses_list_offset_reset()
 {
     _curses_list_offset   = 0;
     _curses_list_mustdraw = true;
+}
+
+void curses_list_set_mode(bool pager)
+{
+    _curses_list_pager = pager;
 }
 
 /********************* Bars abilities ****************************************/

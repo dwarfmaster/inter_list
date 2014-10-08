@@ -81,6 +81,12 @@ bool curses_list_left(size_t nb);
 /* Reset the list to the left. */
 void curses_list_offset_reset();
 
+/* Set the mode of the list : pager or list. In pager mode, when reaching the
+ * bottom of the screen, the whole screen will be cleared and filled with new
+ * lines.
+ */
+void curses_list_set_mode(bool pager);
+
 /********************* Bars abilities ****************************************/
 /* Set the content of the top/bottom bars. The strings will be deduplicated. If
  * they are NULL, the top/bottom bars will be disabled. Returns true if
