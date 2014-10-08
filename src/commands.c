@@ -80,6 +80,8 @@ static void _commands_scroll(const char* str, void* data)
         curses_list_set_mode(true);
     else if(strcmp(str, "list") == 0)
         curses_list_set_mode(false);
+    else if(strcmp(str, "toggle") == 0)
+        curses_list_set_mode(!curses_list_get_mode());
 }
 
 static void _commands_quit(const char* str, void* data)

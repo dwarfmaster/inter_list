@@ -489,6 +489,11 @@ void curses_list_set_mode(bool pager)
     _curses_list_pager = pager;
 }
 
+bool curses_list_get_mode()
+{
+    return _curses_list_pager;
+}
+
 /********************* Bars abilities ****************************************/
 bool curses_top_set(const char* str)
 {

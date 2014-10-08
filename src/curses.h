@@ -87,6 +87,9 @@ void curses_list_offset_reset();
  */
 void curses_list_set_mode(bool pager);
 
+/* Returns true if the scroll mode is pager. */
+bool curses_list_get_mode();
+
 /********************* Bars abilities ****************************************/
 /* Set the content of the top/bottom bars. The strings will be deduplicated. If
  * they are NULL, the top/bottom bars will be disabled. Returns true if
