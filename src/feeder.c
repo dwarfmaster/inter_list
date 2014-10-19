@@ -50,7 +50,7 @@ bool feeder_set(const char* command)
         }
     }
     _feeder_nb = 0;
-    curses_list_clear();
+    curses_list_changed(false);
 
     _feeder_sp = spawn_create_shell(command);
     return spawn_ok(_feeder_sp);
@@ -69,7 +69,6 @@ static void _feeder_add_line(char* line)
 {
     struct _feeder_line_t ln;
     char* strtokbuf;
-    const char* lines[1];
 
     ln.id   = strtok_r(line, "\t", &strtokbuf);
     ln.line = strtok_r(NULL, "",  &strtokbuf);
@@ -90,8 +89,6 @@ static void _feeder_add_line(char* line)
     }
 
     _feeder_lines[_feeder_nb] = ln;
-    lines[0] = ln.line;
-    curses_list_add_lines(1, lines);
     ++_feeder_nb;
 }
 

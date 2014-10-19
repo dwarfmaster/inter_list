@@ -46,13 +46,11 @@ void curses_list_colors(int fg, int bg);
 /* Define the colors for the selected entry of the list. */
 void curses_list_colors_sel(int fg, int bg);
 
-/* Clear the list. */
-void curses_list_clear();
-
-/* Add lines to the list. The lines won't be copied, so the given ones mustn't
- * be free'd by the caller.
+/* Notify curses that the list has changed, so it may update the screen. If
+ * force is true, the screen will be redrawn anyway. If it is false, it will
+ * try to guess if the screen needs to be redrawn.
  */
-bool curses_list_add_lines(size_t nb, const char** lines);
+void curses_list_changed(bool force);
 
 /* Move the selection downward by nb steps. Returns false if it reached the
  * end.

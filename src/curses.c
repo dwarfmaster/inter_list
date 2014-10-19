@@ -1,5 +1,6 @@
 
 #include "curses.h"
+#include "feeder.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
@@ -18,14 +19,13 @@ static bool     _curses_colors;
 static bool     _curses_enabled;
 
 /* The list. */
-static size_t       _curses_list_nb;
-static size_t       _curses_list_capacity;
-static const char** _curses_list_lines;
-static size_t       _curses_list_first;
-static size_t       _curses_list_sel;
-static size_t       _curses_list_offset;
-static bool         _curses_list_pager;
-static bool         _curses_list_mustdraw;
+/* The number of elements in the last update. */
+static size_t            _curses_list_nb;
+static feeder_iterator_t _curses_list_first;
+static feeder_iterator_t _curses_list_sel;
+static size_t            _curses_list_offset;
+static bool              _curses_list_pager;
+static bool              _curses_list_mustdraw;
 
 /* Top and bottom bars. */
 static bool  _curses_top_enable;
@@ -88,14 +88,10 @@ bool curses_init()
 
     /* Initialising the list. */
     _curses_list_nb       = 0;
-    _curses_list_capacity = 10;
-    _curses_list_sel      = 0;
-    _curses_list_first    = 0;
     _curses_list_offset   = 0;
     _curses_list_pager    = false;
-    _curses_list_lines    = malloc(sizeof(char*) * 10);
-    if(!_curses_list_lines)
-        return false;
+    _curses_list_first    = feeder_begin();
+    _curses_list_sel      = feeder_begin();
 
     /* Initialising the top and bottom bars. */
     _curses_top_enable = false;
@@ -126,8 +122,6 @@ bool curses_init()
 bool curses_end()
 {
     endwin();
-    if(_curses_list_lines)
-        free(_curses_list_lines);
     if(_curses_top_str)
         free(_curses_top_str);
     if(_curses_bot_str)
@@ -188,42 +182,44 @@ static unsigned int _curses_list_height()
         - (_curses_bot_enable ? 1 : 0);
 }
 
-static bool _curses_list_isin(unsigned int pos)
+static bool _curses_list_isin(feeder_iterator_t it)
 {
-    return (pos >= _curses_list_first
-            && pos < _curses_list_first + _curses_list_height());
+    return (it.vid >= _curses_list_first.vid
+            && it.vid < _curses_list_first.vid + _curses_list_height());
 }
 
-static void _curses_list_draw_line(unsigned int id)
+static void _curses_list_draw_line(feeder_iterator_t it)
 {
     int cp;
     unsigned int y;
 
-    if(!_curses_list_isin(id))
+    if(!_curses_list_isin(it))
         return;
 
-    if(id == _curses_list_sel)
+    if(feeder_it_cmp(it, _curses_list_sel) == 0)
         cp = COLOR_SEL;
     else
         cp = COLOR_LST;
 
-    y = id - _curses_list_first + (_curses_top_enable ? 1 : 0);
-    if(id >= _curses_list_nb
-            || strlen(_curses_list_lines[id]) <= _curses_list_offset)
+    y = it.vid - _curses_list_first.vid + (_curses_top_enable ? 1 : 0);
+    if(!it.valid || it.vid >= _curses_list_nb
+            || strlen(feeder_get_it_text(it)) <= _curses_list_offset)
         _curses_draw_line("", y, cp);
     else
-        _curses_draw_line(_curses_list_lines[id] + _curses_list_offset, y, cp);
+        _curses_draw_line(feeder_get_it_text(it) + _curses_list_offset, y, cp);
 }
 
 static void _curses_list_draw()
 {
-    size_t i, id;
+    size_t i;
     unsigned int lines;
+    feeder_iterator_t it;
 
     lines = _curses_list_height();
+    it = _curses_list_first;
     for(i = 0; i < lines; ++i) {
-        id = i + _curses_list_first;
-        _curses_list_draw_line(id);
+        feeder_next(&it, 1);
+        _curses_list_draw_line(it);
     }
 }
 
@@ -333,52 +329,28 @@ void curses_list_colors_sel(int fg, int bg)
     init_pair(COLOR_SEL, fg, bg);
 }
 
-void curses_list_clear()
+void curses_list_changed(bool force)
 {
-    _curses_list_nb       = 0;
-    _curses_list_sel      = 0;
-    _curses_list_first    = 0;
-    _curses_list_offset   = 0;
-    _curses_list_mustdraw = true;
-}
+    size_t nb;
+    feeder_iterator_t it;
 
-bool curses_list_add_lines(size_t nb, const char** lines)
-{
-    size_t nsize = _curses_list_nb + nb;
-    size_t savenb = _curses_list_nb;
-    size_t ncapa;
-    size_t i;
-    void* temp;
-
-    if(nsize >= _curses_list_capacity) {
-        /* ((nsize + 9) / 10) is ceil(nsize / 10) */
-        ncapa = 10 * ((nsize + 9) / 10) + 10;
-        temp = realloc(_curses_list_lines, ncapa * sizeof(const char*));
-        if(!temp)
-            return false;
-        _curses_list_lines = temp;
-        _curses_list_capacity = ncapa;
-    }
-
-    for(i = 0; i < nb; ++i)
-        _curses_list_lines[_curses_list_nb + i] = lines[i];
-    _curses_list_nb = nsize;
-
-    if(savenb < _curses_list_height())
+    it = feeder_end();
+    nb = it.vid;
+    if((nb != _curses_list_nb && nb < _curses_list_height())
+            || force)
         _curses_list_mustdraw = true;
-    return true;
+    _curses_list_nb = nb;
 }
 
 bool curses_list_down(size_t nb)
 {
-    size_t savesel = _curses_list_sel;
+    feeder_iterator_t savesel = _curses_list_sel;
     bool ret = true;
-    _curses_list_sel += nb;
-    if(_curses_list_sel >= _curses_list_nb) {
+    feeder_next(&_curses_list_sel, nb);
+    if(!_curses_list_sel.valid) {
+        _curses_list_sel = feeder_begin();
         if(_curses_list_nb > 0)
-            _curses_list_sel = _curses_list_nb - 1;
-        else
-            _curses_list_sel = 0;
+            feeder_next(&_curses_list_sel, _curses_list_nb - 1);
         ret = false;
     }
 
@@ -386,12 +358,15 @@ bool curses_list_down(size_t nb)
         _curses_list_draw_line(savesel);
         _curses_list_draw_line(_curses_list_sel);
     } else {
-        if(_curses_list_height() > _curses_list_sel)
-            _curses_list_first = 0;
+        if(_curses_list_height() > _curses_list_sel.vid)
+            _curses_list_first = feeder_begin();
         else if(_curses_list_pager)
             _curses_list_first = _curses_list_sel;
-        else
-            _curses_list_first = _curses_list_sel - _curses_list_height() + 1;
+        else {
+            _curses_list_first = feeder_begin();
+            feeder_next(&_curses_list_first,
+                    _curses_list_sel.vid - _curses_list_height() + 1);
+        }
         _curses_list_mustdraw = true;
     }
 
@@ -400,25 +375,23 @@ bool curses_list_down(size_t nb)
 
 bool curses_list_up(size_t nb)
 {
-    size_t savesel = _curses_list_sel;
+    feeder_iterator_t savesel = _curses_list_sel;
     bool ret = true;
-    if(_curses_list_sel < nb) {
-        _curses_list_sel = 0;
+    feeder_prev(&_curses_list_sel, nb);
+    if(_curses_list_sel.valid) {
+        _curses_list_sel = feeder_begin();
         ret = false;
     }
-    else
-        _curses_list_sel -= nb;
 
     if(_curses_list_isin(_curses_list_sel)) {
         _curses_list_draw_line(savesel);
         _curses_list_draw_line(_curses_list_sel);
     } else {
         if(_curses_list_pager) {
-            if(_curses_list_height() > _curses_list_sel)
-                _curses_list_first = 0;
-            else {
-                _curses_list_first = _curses_list_sel
-                    - _curses_list_height() + 1;
+            _curses_list_first = feeder_begin();
+            if(_curses_list_height() <= _curses_list_sel.vid) {
+                feeder_next(&_curses_list_first,
+                        _curses_list_sel.vid - _curses_list_height() + 1);
             }
         } else
             _curses_list_first = _curses_list_sel;
@@ -429,28 +402,37 @@ bool curses_list_up(size_t nb)
 
 size_t curses_list_get()
 {
-    return _curses_list_sel;
+    return _curses_list_sel.vid;
 }
 
 bool curses_list_set(size_t nb)
 {
-    size_t savesel = _curses_list_sel;
     size_t height;
-    if(nb >= _curses_list_nb)
+    feeder_iterator_t savesel = _curses_list_sel;
+
+    _curses_list_sel = feeder_begin();
+    feeder_next(&_curses_list_sel, nb);
+    if(!_curses_list_sel.valid) {
+        _curses_list_sel = savesel;
         return false;
-    _curses_list_sel = nb;
+    }
     
     if(_curses_list_isin(_curses_list_sel)) {
         _curses_list_draw_line(savesel);
         _curses_list_draw_line(_curses_list_sel);
     } else {
         height = _curses_list_height();
-        if(_curses_list_sel < height / 2)
-            _curses_list_first = 0;
-        else if(_curses_list_nb - _curses_list_sel < height / 2)
-            _curses_list_first = _curses_list_nb - height;
-        else
-            _curses_list_first = _curses_list_sel - height / 2;
+        if(_curses_list_sel.vid < height / 2)
+            _curses_list_first = feeder_begin();
+        else if(_curses_list_nb - _curses_list_sel.vid < height / 2) {
+            _curses_list_first = feeder_begin();
+            feeder_next(&_curses_list_first, _curses_list_nb - height);
+        }
+        else {
+            _curses_list_first = feeder_begin();
+            feeder_next(&_curses_list_first,
+                    _curses_list_sel.vid - height / 2);
+        }
         _curses_list_mustdraw = true;
     }
 
