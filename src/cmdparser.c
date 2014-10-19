@@ -3,9 +3,13 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* Represents a commands. */
 struct _cmdparser_command_t {
+    /* The name of the command, which is used to access it, and is parsed. */
     const char* name;
+    /* The callback called when this command is parsed. */
     cmdparser_callback_t cb;
+    /* Specific data given to the callback. */
     void* data;
 };
 
@@ -35,6 +39,9 @@ void cmdparser_quit()
         free(_cmdparser_cmds);
 }
 
+/* Insert a cmd in the _cmdparser_cmds array at a specific position. It expect
+ * id to be in [0; _cmdparser_nb] and _cmdparser_cmds to be already big enough.
+ */
 static bool _cmdparser_insert(size_t id, struct _cmdparser_command_t cmd)
 {
     if(id != _cmdparser_nb) {
@@ -66,7 +73,9 @@ bool cmdparser_add_command(const char* name,
 
     /* Insert it. */
     id = 0;
-    while(id < _cmdparser_nb && strcmp(_cmdparser_cmds[id].name, name) < 0) ++id;
+    while(id < _cmdparser_nb
+            && strcmp(_cmdparser_cmds[id].name, name) < 0)
+        ++id;
     cmd.name = name;
     cmd.cb   = cb;
     cmd.data = data;
@@ -75,6 +84,9 @@ bool cmdparser_add_command(const char* name,
     return true;
 }
 
+/* Returns a pointer to the command in _cmdparser_cmds with a specific name. It
+ * returns NULL if no command is found.
+ */
 struct _cmdparser_command_t* _cmdparser_find(const char* name)
 {
     size_t max, min, guess;

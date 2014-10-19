@@ -4,6 +4,10 @@
 
 #include <stdbool.h>
 
+/* The type of callback that is called when a command is parsed. The first
+ * is a string with the arguments of the command, the second is a specific data
+ * given by the caller.
+ */
 typedef void (*cmdparser_callback_t)(const char*, void*);
 
 /* Init the command parser. */
@@ -33,8 +37,8 @@ bool cmdparser_change_callback(const char* name,
 /* Parse an entry line. The line must have the format 'command args'. Returns
  * false if command isn't recognised. The callback associated with the command
  * will be called, getting the args as its first argument. If there is no args,
- * it will receive an empty. line won't be stored, so it doesn't need to remain
- * valid after the call.
+ * it will receive an empty string. line won't be stored, so it doesn't need to
+ * remain valid after the call.
  */
 bool cmdparser_parse(const char* line);
 
