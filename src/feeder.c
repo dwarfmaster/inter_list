@@ -114,32 +114,6 @@ void feeder_update()
     }
 }
 
-size_t feeder_get_id()
-{
-    return curses_list_get();
-}
-
-size_t feeder_get_lines()
-{
-    return _feeder_nb;
-}
-
-const char* feeder_get_name(size_t id)
-{
-    if(id >= _feeder_nb)
-        return NULL;
-    else
-        return _feeder_lines[id].id;
-}
-
-const char* feeder_get_text(size_t id)
-{
-    if(id >= _feeder_nb)
-        return NULL;
-    else
-        return _feeder_lines[id].line;
-}
-
 feeder_iterator_t feeder_begin()
 {
     feeder_iterator_t it;

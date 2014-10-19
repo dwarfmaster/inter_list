@@ -28,22 +28,6 @@ int feeder_fd();
 /* Read data from the feeder and add it to the list. */
 void feeder_update();
 
-/* Get the id of the selection. */
-/* Deprecated : use iterators. */
-size_t feeder_get_id();
-
-/* Get the number of lines. */
-/* Deprecated : use iterators. */
-size_t feeder_get_lines();
-
-/* Get the name of a line. Returns NULL if id is invalid. */
-/* Deprecated : use iterators. */
-const char* feeder_get_name(size_t id);
-
-/* Get the text of a line. Returns NULL if id is invalid. */
-/* Deprecated : use iterators. */
-const char* feeder_get_text(size_t id);
-
 /* Get the iterator to the first element. Returns an invalid iterator if there
  * is no lines.
  */

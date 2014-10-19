@@ -58,7 +58,7 @@ static void _commands_begin(const char* str, void* data)
 static void _commands_end(const char* str, void* data)
 {
     if(data && str) { } /* avoid warnings */
-    curses_list_set(feeder_get_lines() - 1);
+    curses_list_set(curses_list_get() - 1);
 }
 
 static void _commands_goto(const char* str, void* data)
