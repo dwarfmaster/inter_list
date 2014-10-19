@@ -90,6 +90,7 @@ static void _feeder_add_line(char* line)
 
     _feeder_lines[_feeder_nb] = ln;
     ++_feeder_nb;
+    curses_list_changed(false);
 }
 
 void feeder_update()
@@ -159,30 +160,29 @@ feeder_iterator_t feeder_end()
 
 feeder_iterator_t feeder_next(feeder_iterator_t* it, size_t n)
 {
-    size_t count;
-
-    if(!it->valid)
+    if(!it->valid || n == 0)
         return *it;
 
-    count = 0;
-    while(it->id++ < _feeder_nb && count++ < n);
-    if(count != n)
+    it->id += n;
+    if(it->id >= _feeder_nb) {
+        it->id = _feeder_nb;
         it->valid = false;
+    }
     it->vid = it->id;
     return *it;
 }
 
 feeder_iterator_t feeder_prev(feeder_iterator_t* it, size_t n)
 {
-    size_t count;
-
-    if(!it->valid)
+    if(!it->valid || n == 0)
         return *it;
 
-    count = 0;
-    while(it->id-- > 1 && count++ < n);
-    if(it->id == 0 && count < n-1)
+    if(it->id >= n)
+        it->id -= n;
+    else {
+        it->id = 0;
         it->valid = false;
+    }
     it->vid = it->id;
     return *it;
 }

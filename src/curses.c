@@ -192,6 +192,7 @@ static void _curses_list_draw_line(feeder_iterator_t it)
 {
     int cp;
     unsigned int y;
+    const char* txt;
 
     if(!_curses_list_isin(it))
         return;
@@ -202,11 +203,12 @@ static void _curses_list_draw_line(feeder_iterator_t it)
         cp = COLOR_LST;
 
     y = it.vid - _curses_list_first.vid + (_curses_top_enable ? 1 : 0);
+    txt = feeder_get_it_text(it);
     if(!it.valid || it.vid >= _curses_list_nb
-            || strlen(feeder_get_it_text(it)) <= _curses_list_offset)
+            || strlen(txt) <= _curses_list_offset)
         _curses_draw_line("", y, cp);
     else
-        _curses_draw_line(feeder_get_it_text(it) + _curses_list_offset, y, cp);
+        _curses_draw_line(txt + _curses_list_offset, y, cp);
 }
 
 static void _curses_list_draw()
@@ -378,7 +380,7 @@ bool curses_list_up(size_t nb)
     feeder_iterator_t savesel = _curses_list_sel;
     bool ret = true;
     feeder_prev(&_curses_list_sel, nb);
-    if(_curses_list_sel.valid) {
+    if(!_curses_list_sel.valid) {
         _curses_list_sel = feeder_begin();
         ret = false;
     }
