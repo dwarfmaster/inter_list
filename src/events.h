@@ -23,8 +23,11 @@ void events_clear();
  *                 This is case insensitive.
  *  - abc<Cmd :> : the event is the same as before, but when triggered a prompt
  *                 is opened to query a string from the user.
- * If action contain %s, it will be replaced by the string queried to the user.
- * The string will be deduplicated, they don't need to remain valid afterward.
+ *                 If action contain %s, it will be replaced by the string
+ *                 queried to the user.
+ * If it contains %n, %t or %i, they will be replaced by the line name, text
+ * and id (respectively).
+ * ev and action will be duplicated, they don't need to remain valid afterward.
  */
 bool events_add(const char* ev, const char* action);
 

@@ -47,10 +47,14 @@ int _events_keys_code[] = {
 
 /* Comp event (<C-A-l> for example). */
 struct _events_comp_t {
+    /* bitmask of the modifiers that required by this event. */
     unsigned char mods;
+    /* The code of the letter. */
     int letter;
+    /* The action to be executed when the event is completed. */
     char* action;
 };
+
 /* The comps events, sorted by letter. */
 static struct _events_comp_t* _events_comps;
 static size_t _events_comps_capa;
@@ -58,21 +62,30 @@ static size_t _events_comps_size;
 
 /* Seq event (abc for example). */
 struct _events_seq_t {
+    /* The sequence of letters. */
     int* seq;
+    /* Must a string be queried to the user. */
     bool use_prefix;
+    /* The prefix to be displayed when querying a string to the user. */
     char* prefix;
+    /* Action to be performat when the event is completed. */
     strformat_t* action;
 };
+
 /* The sequence events, sorted by seq. */
 static struct _events_seq_t* _events_seqs;
 static size_t _events_seqs_capa;
 static size_t _events_seqs_size;
+/* The symbols that can be parsed in the actions. */
 static strformat_symbs_t* _events_sbs;
 
-/* Handling events. */
+/* An array of the typed letters. */
 static int _events_typed[EVENTS_MAX_SEQ];
+/* The number of typed letters. */
 static size_t _events_nb_typed;
+/* Is the prompt on. */
 static bool _events_inprompt;
+/* Restrict where to search the seq event when a new key is typed. */
 static size_t _events_typ_min;
 static size_t _events_typ_max;
 
@@ -139,6 +152,9 @@ void events_clear()
     _events_seqs_size  = 0;
 }
 
+/* Add a new comp event. Returns false if the allocation failed : in this case,
+ * all the comp events have been freed.
+ */
 static bool _events_comp_insert(size_t pos, struct _events_comp_t elem)
 {
     size_t nsize = _events_comps_size + 1;
@@ -161,6 +177,9 @@ static bool _events_comp_insert(size_t pos, struct _events_comp_t elem)
     return true;
 }
 
+/* Add a new seq event. Returns false if the allocation failed : in this case,
+ * all the seq events have been freed.
+ */
 static bool _events_seq_insert(size_t pos, struct _events_seq_t elem)
 {
     size_t nsize = _events_seqs_size + 1;
@@ -184,6 +203,9 @@ static bool _events_seq_insert(size_t pos, struct _events_seq_t elem)
     return true;
 }
 
+/* Parse the string of a comp event and add it. Return false if the syntax was
+ * not respected.
+ */
 static bool _events_parse_comp(char* str, const char* action)
 {
     struct _events_comp_t cp;
@@ -231,6 +253,7 @@ static bool _events_parse_comp(char* str, const char* action)
         return true;
 }
 
+/* Returns the key code corresponding to a key name. */
 static int _events_name_to_key(const char* name)
 {
     size_t i;
@@ -254,6 +277,7 @@ static int _events_name_to_key(const char* name)
     return key;
 }
 
+/* Parse a sequence of keys and returns a 0-terminated array of keycodes. */
 static int* _events_parse_seq_string(const char* str)
 {
     size_t i, j, size;
@@ -296,6 +320,7 @@ static int* _events_parse_seq_string(const char* str)
     return ret;
 }
 
+/* Get the length of a 0-terminated array of keycodes. */
 static size_t _events_seqlen(int* sq)
 {
     size_t l = 0;
@@ -303,6 +328,9 @@ static size_t _events_seqlen(int* sq)
     return --l;
 }
 
+/* Compare two array of 0-terminated array of keycodes. Same semantic as
+ * strcmp.
+ */
 static int _events_seqcmp(int* sq1, int* sq2)
 {
     size_t l1, l2, l, i;
@@ -317,6 +345,7 @@ static int _events_seqcmp(int* sq1, int* sq2)
     return l1 - l2;
 }
 
+/* Parse a complete seq event string and add it. */
 static bool _events_parse_seq(char* str, const char* action)
 {
     char* strtokbuf;
@@ -361,6 +390,7 @@ static bool _events_parse_seq(char* str, const char* action)
         return true;
 }
 
+/* Clear the buffer of already typed keys. */
 static void _events_cancel()
 {
     _events_nb_typed = 0;
@@ -398,6 +428,7 @@ bool events_add(const char* ev, const char* action)
     return ret;
 }
 
+/* Set the symbols for substitution in actions. */
 static void _events_set_list_symbols()
 {
     size_t id;
@@ -410,6 +441,9 @@ static void _events_set_list_symbols()
     strformat_set(_events_sbs, 't', feeder_get_text(id));
 }
 
+/* Get the actually pressed modifiers.
+ * TODO doesn't work.
+ */
 static unsigned char _events_modifiers()
 {
     unsigned char mods = 6;
@@ -419,6 +453,7 @@ static unsigned char _events_modifiers()
     return mods;
 }
 
+/* Check if the pressed key validate a comp event. */
 static bool _events_process_comp(int ev)
 {
     unsigned char mods;
@@ -437,6 +472,7 @@ static bool _events_process_comp(int ev)
     return false;
 }
 
+/* Check if the pressed key validate a seq event. */
 static void _events_process_seq(int ev)
 {
     size_t i;
@@ -498,8 +534,7 @@ void events_process()
             _events_cancel();
         }
     }
-    else if(_events_nb_typed == 0 && _events_process_comp(ev)) {}
-    else
+    else if(_events_nb_typed != 0 || !_events_process_comp(ev)) {}
         _events_process_seq(ev);
 }
 
