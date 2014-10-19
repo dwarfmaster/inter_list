@@ -431,14 +431,15 @@ bool events_add(const char* ev, const char* action)
 /* Set the symbols for substitution in actions. */
 static void _events_set_list_symbols()
 {
-    size_t id;
+    feeder_iterator_t it;
     char buffer[256];
 
-    id = feeder_get_id();
-    snprintf(buffer, 256, "%lu", id);
+    it = feeder_begin();
+    feeder_next(&it, curses_list_get());
+    snprintf(buffer, 256, "%lu", it.id);
     strformat_set(_events_sbs, 'i', buffer);
-    strformat_set(_events_sbs, 'n', feeder_get_name(id));
-    strformat_set(_events_sbs, 't', feeder_get_text(id));
+    strformat_set(_events_sbs, 'n', feeder_get_it_name(it));
+    strformat_set(_events_sbs, 't', feeder_get_it_text(it));
 }
 
 /* Get the actually pressed modifiers.
