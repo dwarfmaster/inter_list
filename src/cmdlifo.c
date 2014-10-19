@@ -5,13 +5,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* A spawned process from which commands are read. */
 struct _cmdlifo_sp_t {
+    /* The spawned process. */
     spawn_t sp;
+    /* A buffer in which yet to read data from the process is stored. */
     char* buffer;
 };
+/* An array (pile) of processes to read from. Data is read from the top one,
+ * and move to the one under when it dies.
+ */
 static struct _cmdlifo_sp_t* _cmdlifo_sps;
+/* The number of processes in _cmdlifo_sps. */
 static size_t                _cmdlifo_nb;
+/* The size of _cmdlifo_sps. */
 static size_t                _cmdlifo_capa;
+/* Indicates if a new process was spawned while reading from one. */
 static bool                  _cmdlifo_spawned;
 
 bool cmdlifo_init()
@@ -64,6 +73,10 @@ bool cmdlifo_push(const char* cmd)
     return true;
 }
 
+/* Read commands from a buffer. Store what is left to read from the buffer into
+ * _cmdlifo_sps[_cmdlifo_nb - 1].buffer if a new process is spawned while
+ * reading the buffer.
+ */
 static bool _cmdlifo_parse_buffer(char* buffer)
 {
     char* line;
