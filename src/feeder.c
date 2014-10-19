@@ -3,11 +3,16 @@
 #include "spawn.h"
 #include "curses.h"
 
+/* The process of the feeder. */
 static spawn_t _feeder_sp;
+/* A read line. */
 struct _feeder_line_t {
+    /* The text of the line. */
     char* line;
+    /* The id of the line. */
     char* id;
 };
+/* The array of all the line read. */
 static struct _feeder_line_t*  _feeder_lines;
 static size_t                  _feeder_nb;
 static size_t                  _feeder_capa;
@@ -59,6 +64,7 @@ int feeder_fd()
         return -1;
 }
 
+/* Add a new read line to the array. */
 static void _feeder_add_line(char* line)
 {
     struct _feeder_line_t ln;
