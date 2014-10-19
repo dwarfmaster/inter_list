@@ -5,8 +5,13 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+/* Represent a spawned process. */
 typedef struct _spawn_t {
+    /* The PID of the process. */
     pid_t process;
+    /* The pipe linked to the process. stdout can be read from pipe[0]. pipe[1]
+     * is closed in the parent process, but written to by the spawned process.
+     */
     int pipe[2];
 } spawn_t;
 
@@ -58,7 +63,7 @@ size_t spawn_read(spawn_t sp, char* buffer, size_t bufsize);
 /* Check if there is data to read from a spawned process. */
 bool spawn_ready(spawn_t sp);
 
-/* Return an FD to use watch the spawned process with select for read. */
+/* Return an FD to watch the spawned process with select for read. */
 int spawn_fd(spawn_t sp);
 
 #endif

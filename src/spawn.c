@@ -38,6 +38,9 @@ spawn_t spawn_create(char* const prog[])
     return sp;
 }
 
+/* Get the value of the $SHELL environment variable or /bin/sh if $SHELL is not
+ * setted.
+ */
 static const char* _spawn_get_shell()
 {
     const char* sh = getenv("SHELL");
