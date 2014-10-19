@@ -220,8 +220,8 @@ static void _curses_list_draw()
     lines = _curses_list_height();
     it = _curses_list_first;
     for(i = 0; i < lines; ++i) {
-        feeder_next(&it, 1);
         _curses_list_draw_line(it);
+        feeder_next(&it, 1);
     }
 }
 
