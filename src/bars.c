@@ -61,19 +61,22 @@ bool bars_bot_set(const char* br)
 
 void bars_update()
 {
-    size_t i, nb;
+    size_t i;
+    feeder_iterator_t it;
     char buffer[256];
 
-    i = feeder_get_id();
+    i = curses_list_get();
     snprintf(buffer, 256, "%lu", i + 1);
     strformat_set(_bars_symbs, 'i', buffer);
 
-    nb = feeder_get_lines();
-    snprintf(buffer, 256, "%lu", nb);
+    it = feeder_end();
+    snprintf(buffer, 256, "%lu", it.id);
     strformat_set(_bars_symbs, 'I', buffer);
 
-    strformat_set(_bars_symbs, 'n', feeder_get_name(i));
-    strformat_set(_bars_symbs, 't', feeder_get_text(i));
+    it = feeder_begin();
+    feeder_next(&it, i);
+    strformat_set(_bars_symbs, 'n', feeder_get_it_name(it));
+    strformat_set(_bars_symbs, 't', feeder_get_it_text(it));
 
     if(_bars_top)
         curses_top_set(strformat_get(_bars_top));
