@@ -6,6 +6,18 @@
 
 #define STRFORMAT_BUFFER_LENGTH 512
 
+/* A set of symbols to be parsed. */
+struct _strformat_symbs_t {
+    /* The symbols : one by character. This list must be terminated by the '\0'
+     * character.
+     */
+    char*  symbols;
+    /* The values of the symbols. It is an array of strings of the same size
+     * than the symbols string.
+     */
+    char** contents;
+};
+
 /* The basic elem in which the string parsed are decomposed. It is an internal
  * structure, which mustn't be manipulated par the users.
  */
@@ -100,7 +112,7 @@ void strformat_set(strformat_symbs_t* sbs, char symbol, const char* value)
 /* Return the new capacity. Returns 0 and free sbs->elems if an error happened.
  * TODO free all of the elems in case of error.
  */
-static size_t add_elem(strformat_t* fmt,
+static size_t _strformat_add_elem(strformat_t* fmt,
         struct _strformat_elem_t elem,
         size_t capacity)
 {
@@ -156,7 +168,7 @@ strformat_t* strformat_parse(strformat_symbs_t* sbs, const char* str)
                 continue;
             elem.value = &(sbs->contents[tbg - sbs->symbols]);
 
-            capacity = add_elem(fmt, elem, capacity);
+            capacity = _strformat_add_elem(fmt, elem, capacity);
             if(capacity == 0) {
                 free(fmt);
                 return NULL;
@@ -176,7 +188,7 @@ strformat_t* strformat_parse(strformat_symbs_t* sbs, const char* str)
             memcpy(elem.value, tbg, size);
             ((char*)elem.value)[size] = '\0';
 
-            capacity = add_elem(fmt, elem, capacity);
+            capacity = _strformat_add_elem(fmt, elem, capacity);
             if(capacity == 0) {
                 free(fmt);
                 return NULL;
@@ -191,7 +203,7 @@ strformat_t* strformat_parse(strformat_symbs_t* sbs, const char* str)
         memcpy(elem.value, tbg, size);
         ((char*)elem.value)[size] = '\0';
 
-        capacity = add_elem(fmt, elem, capacity);
+        capacity = _strformat_add_elem(fmt, elem, capacity);
         if(capacity == 0) {
             free(fmt);
             return NULL;

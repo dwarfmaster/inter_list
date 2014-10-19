@@ -2,11 +2,8 @@
 #ifndef DEF_STRFORMAT
 #define DEF_STRFORMAT
 
-typedef struct _strformat_symbs_t {
-    char*  symbols;
-    char** contents;
-} strformat_symbs_t;
-
+struct _strformat_symbs_t;
+typedef struct _strformat_symbs_t strformat_symbs_t;
 struct _strformat_t;
 typedef struct _strformat_t strformat_t;
 
