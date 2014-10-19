@@ -341,6 +341,8 @@ void curses_list_changed(bool force)
     if((nb != _curses_list_nb && nb < _curses_list_height())
             || force)
         _curses_list_mustdraw = true;
+    if(_curses_list_nb == 0 && !_curses_list_first.valid)
+        _curses_list_first = feeder_begin();
     _curses_list_nb = nb;
 }
 
