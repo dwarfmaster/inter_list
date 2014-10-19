@@ -146,6 +146,7 @@ feeder_iterator_t feeder_begin()
 {
     feeder_iterator_t it;
     it.id    = 0;
+    it.vid   = it.id;
     it.valid = (_feeder_nb != 0);
     return it;
 }
@@ -154,6 +155,7 @@ feeder_iterator_t feeder_end()
 {
     feeder_iterator_t it;
     it.id    = _feeder_nb;
+    it.vid   = it.id;
     it.valid = false;
     return it;
 }
@@ -169,6 +171,22 @@ feeder_iterator_t feeder_next(feeder_iterator_t* it, size_t n)
     while(it->id++ < _feeder_nb && count++ < n);
     if(count != n)
         it->valid = false;
+    it->vid = it->id;
+    return *it;
+}
+
+feeder_iterator_t feeder_prev(feeder_iterator_t* it, size_t n)
+{
+    size_t count;
+
+    if(!it->valid)
+        return *it;
+
+    count = 0;
+    while(it->id-- > 1 && count++ < n);
+    if(it->id == 0 && count < n-1)
+        it->valid = false;
+    it->vid = it->id;
     return *it;
 }
 
