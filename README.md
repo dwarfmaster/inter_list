@@ -90,7 +90,6 @@ You can change the action when opening a file by editing the
  - [X] let the user configure colors.
  - [X] handle UTF-8.
  - [ ] handle mouse.
- - [ ] handle thread-based lists.
- - [ ] add a search mecanism.
+ - [ ] handle hiding.
  - [ ] handle combinaisons keybindings.
 
