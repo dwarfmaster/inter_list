@@ -535,7 +535,7 @@ void events_process()
             _events_cancel();
         }
     }
-    else if(_events_nb_typed != 0 || !_events_process_comp(ev)) {}
+    else if(_events_nb_typed != 0 || !_events_process_comp(ev))
         _events_process_seq(ev);
 }
 
