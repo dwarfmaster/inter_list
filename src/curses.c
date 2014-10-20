@@ -220,8 +220,12 @@ static void _curses_list_draw()
     lines = _curses_list_height();
     it = _curses_list_first;
     for(i = 0; i < lines; ++i) {
-        _curses_list_draw_line(it);
-        feeder_next(&it, 1);
+        if(it.valid) {
+            _curses_list_draw_line(it);
+            feeder_next(&it, 1);
+        }
+        else
+            _curses_draw_line("", i + (_curses_top_enable ? 1 : 0), COLOR_LST);
     }
 }
 
@@ -341,10 +345,12 @@ void curses_list_changed(bool force)
     if((nb != _curses_list_nb && nb < _curses_list_height())
             || force)
         _curses_list_mustdraw = true;
-    if(_curses_list_nb == 0 && !_curses_list_first.valid) {
+    if((_curses_list_nb == 0 && !_curses_list_first.valid)
+            || nb < _curses_list_nb) {
         _curses_list_first = feeder_begin();
         _curses_list_sel   = _curses_list_first;
     }
+
     _curses_list_nb = nb;
 }
 
