@@ -84,6 +84,22 @@ static void _commands_scroll(const char* str, void* data)
         curses_list_set_mode(!curses_list_get_mode());
 }
 
+static void _commands_hide(const char* str, void* data)
+{
+    char mode[16];
+    size_t id1, id2;
+    if(data) { } /* avoid warnings */
+    if(!str)
+        return;
+    sscanf(str, "%15s %lu %lu", mode, &id1, &id2);
+    if(strncmp(mode, "toggle", 15) == 0)
+        feeder_hide_toggle(id1, id2);
+    else if(strncmp(mode, "on", 15) == 0)
+        feeder_hide(true, id1, id2);
+    else if(strncmp(mode, "off", 15) == 0)
+        feeder_hide(false, id1, id2);
+}
+
 static void _commands_quit(const char* str, void* data)
 {
     if(str) { } /* avoid warnings */
@@ -215,6 +231,7 @@ void commands_setup(bool* cont)
     cmdparser_add_command("end",     &_commands_end,     NULL);
     cmdparser_add_command("goto",    &_commands_goto,    NULL);
     cmdparser_add_command("scroll",  &_commands_scroll,  NULL);
+    cmdparser_add_command("hide",    &_commands_hide,    NULL);
 
     cmdparser_add_command("quit",    &_commands_quit,    cont);
     cmdparser_add_command("exe",     &_commands_exe,     NULL);
