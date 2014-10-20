@@ -7,6 +7,7 @@ echo 'map [down] down'
 echo 'map [left] left'
 echo 'map [right] right'
 echo 'map t scroll toggle'
+echo 'map h hide toggle 10 20'
 
 echo 'map gg begin'
 echo 'map G end'
