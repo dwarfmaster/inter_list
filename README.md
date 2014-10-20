@@ -32,11 +32,11 @@ separated by newlines.
                    screen and new lines will be displayed, while in `list`
                    mode, there will be a simple scrolling. `toggle` simply
                    changes the actual scroll mode to the other one.
- - 'hide mode id1 id2' : mode must be either 'on', 'off' or 'toggle'. If it is
-                   'on', it will hide the lines which id is in [id1,id2]. If it
-                   is 'off', it will show the lines in [id1,id2]. Finally, if
-                   it is toggle, it will toggle the visibility of each line in
-                   [id1,id2].
+ - `hide mode id1 id2` : mode must be either `on`, `off` or `toggle`. If it is
+                   `on`, it will hide the lines which id is in [id1,id2]. If it
+                   is `off`, it will show the lines in [id1,id2]. Finally, if
+                   it is `toggle`, it will toggle the visibility of each line
+                   in [id1,id2].
  - `quit`        : end the program.
  - `exe str`     : str will be parsed as a command.
  - `map key cmd` : cmd will be executed when key combinaison is pressed. See
