@@ -11,6 +11,8 @@ struct _feeder_line_t {
     char* line;
     /* The id of the line. */
     char* id;
+    /* Is the line shown. */
+    bool show;
 };
 /* The array of all the line read. */
 static struct _feeder_line_t*  _feeder_lines;
@@ -72,6 +74,7 @@ static void _feeder_add_line(char* line)
 
     ln.id   = strtok_r(line, "\t", &strtokbuf);
     ln.line = strtok_r(NULL, "",  &strtokbuf);
+    ln.show = true;
     if(!ln.id || !ln.line)
         return;
     ln.id   = strdup(ln.id);
@@ -125,39 +128,62 @@ feeder_iterator_t feeder_begin()
 
 feeder_iterator_t feeder_end()
 {
+    size_t i;
     feeder_iterator_t it;
     it.id    = _feeder_nb;
-    it.vid   = it.id;
     it.valid = false;
+
+    /* TODO optimize */
+    it.vid   = 0;
+    for(i = 0; i < _feeder_nb; ++i) {
+        if(_feeder_lines[i].show)
+            ++it.vid;
+    }
     return it;
 }
 
 feeder_iterator_t feeder_next(feeder_iterator_t* it, size_t n)
 {
+    size_t count;
     if(!it->valid || n == 0)
         return *it;
 
-    it->id += n;
-    if(it->id >= _feeder_nb) {
-        it->id = _feeder_nb;
-        it->valid = false;
+    count = 0;
+    while(count < n) {
+        ++it->id;
+        if(it->id >= _feeder_nb) {
+            it->valid = false;
+            return *it;
+        } else if(_feeder_lines[it->id].show) {
+            ++it->vid;
+            ++count;
+        }
     }
-    it->vid = it->id;
+
     return *it;
 }
 
 feeder_iterator_t feeder_prev(feeder_iterator_t* it, size_t n)
 {
+    size_t count;
     if(!it->valid || n == 0)
         return *it;
 
-    if(it->id >= n)
-        it->id -= n;
-    else {
-        it->id = 0;
-        it->valid = false;
+    count = 0;
+    while(count < n) {
+        if(it->id == 0) {
+            if(count != n) {
+                it->valid = false;
+                return *it;
+            }
+        }
+        --it->id;
+        if(_feeder_lines[it->id].show) {
+            --it->vid;
+            ++count;
+        }
     }
-    it->vid = it->id;
+
     return *it;
 }
 
@@ -178,5 +204,27 @@ const char* feeder_get_it_name(feeder_iterator_t it)
 int feeder_it_cmp(feeder_iterator_t it1, feeder_iterator_t it2)
 {
     return it1.id - it2.id;
+}
+
+void feeder_hide(bool hide, size_t id1, size_t id2)
+{
+    size_t i;
+    if(id1 > id2
+            || id2 >= _feeder_nb)
+        return;
+    for(i = id1; i <= id2; ++i)
+        _feeder_lines[i].show = !hide;
+    curses_list_changed(true);
+}
+
+void feeder_hide_toggle(size_t id1, size_t id2)
+{
+    size_t i;
+    if(id1 > id2
+            || id2 >= _feeder_nb)
+        return;
+    for(i = id1; i <= id2; ++i)
+        _feeder_lines[i].show = !_feeder_lines[i].show;
+    curses_list_changed(true);
 }
 

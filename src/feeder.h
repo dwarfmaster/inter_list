@@ -61,5 +61,9 @@ const char* feeder_get_it_name(feeder_iterator_t it);
 /* Compare two iterators. The semantics are the same as strcmp. */
 int feeder_it_cmp(feeder_iterator_t it1, feeder_iterator_t it2);
 
+/* Hide/unhide lines in [id1,id2]. */
+void feeder_hide(bool hide, size_t id1, size_t id2);
+void feeder_hide_toggle(size_t id1, size_t id2);
+
 #endif
 
