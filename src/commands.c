@@ -103,8 +103,8 @@ static void _commands_hide(const char* str, void* data)
 static void _commands_quit(const char* str, void* data)
 {
     if(str) { } /* avoid warnings */
-    bool* cont = data;
-    *cont = false;
+    int* cont = data;
+    *cont = 0;
 }
 
 static void _commands_exe(const char* str, void* data)
@@ -221,7 +221,7 @@ static void _commands_color(const char* str, void* data)
     free(used);
 }
 
-void commands_setup(bool* cont)
+void commands_setup(int* cont)
 {
     cmdparser_add_command("up",      &_commands_up,      NULL);
     cmdparser_add_command("down",    &_commands_down,    NULL);
