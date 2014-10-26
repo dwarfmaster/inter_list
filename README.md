@@ -16,53 +16,6 @@ interact with. This program takes only one argument (but it is mandatory) : the
 path to the socket to create for the 9P connection. For the moment, only unix
 sockets are handled.
 
-## Available commands.
-This way of interacting is deprecated.
- - `up    [nb]`  : move the selection up nb lines. nb defaults to 1.
- - `down  [nb]`  : move the selection down nb lines. nb defaults to 1.
- - `right [nb]`  : move the lines right nb characters. nb defaults to 1.
- - `left  [nb]`  : move the lines left nb characters. nb defaults to 1.
- - `begin`       : move the selection to the first line.
- - `end`         : move the selection to the last line.
- - `goto  [nb]`  : move the selection to le nb-eme line. If nb is out of range,
-                 the selection won't be moved.
- - `scroll mode` : set the scroll mode. mode must be either `pager`, `list` or
-                   `toggle`. If the scroll mode is `pager`, the list elements
-                   will be displayed page by page : when reaching the bottom of
-                   the screen, the selection will be placed on the top of the
-                   screen and new lines will be displayed, while in `list`
-                   mode, there will be a simple scrolling. `toggle` simply
-                   changes the actual scroll mode to the other one.
- - `hide mode id1 id2` : mode must be either `on`, `off` or `toggle`. If it is
-                   `on`, it will hide the lines which id is in [id1,id2]. If it
-                   is `off`, it will show the lines in [id1,id2]. Finally, if
-                   it is `toggle`, it will toggle the visibility of each line
-                   in [id1,id2].
- - `quit`        : end the program.
- - `exe str`     : str will be parsed as a command.
- - `map key cmd` : cmd will be executed when key combinaison is pressed. See
-                 keybinds paragraph for details of the syntax of key.
- - `feed prog`   : prog must the path to a program which will be spawned. Its
-                 stdout will be used to populate the list contents. See the
-                 feeding paragraph for details on how its output must be
-                 formatted.
- - `spawn prog`  : will spawn prog and read its output as a set of commands.
- - `term prog`   : prog will be spawned in a shell escape. It's stdout will be
-                 displayed to the used.
- - `refresh`     : redraw the screen.
- - `top [str]`   : set the contents of the top bar. If there is not str, the
-                   top bar will be disabled. There are symbols which will
-                   replaced by values : `%i` will be replaced by the index
-                   of the selected entry, `%I` will be replaced by the number
-                   of entries, `%n` will be replaced by the name of the
-                   selected entry and `%t` by its text.
- - `bot [str]`   : work the same as the top command, but for the bottom bar.
- - `color [part] [fg] [bg]` : define the background and foreground colors of a
-                            part of the interface. part can be either `top`,
-                            `bot`, `lst` or `sel`. `fg` and `bg` are colors,
-                            so they can be the name of any of the eight colors
-                            supported by ncurses.
-
 ## FS organisation.
 All these files and directory are used to interact with the program.
  - `ctl` : basic file to handle commands. This file is write-only and only
@@ -91,9 +44,11 @@ All these files and directory are used to interact with the program.
        displayed, while in `list` mode, there will be a simple scrolling. When
        read, this file gives the actual mode.
    - `selection` : set the selected line. It can either be an absolute value
-       or a relative one, like `+4` or `-1`. See the selection rules part
-       for details on how it behaves on corner case. When read, it gives the
-       absolute id of the selected line.
+       or a relative one, like `+4` or `-1`. Finally, it also accepts two
+       special commands : `begin` and `end`. If setting an absolute value out
+       of range, the selection won't be changed. If using a relative value
+       leading out of range, it will stop either on the first or last value.
+       When read, it gives the absolute id of the selected line.
    - //id// : directories which name is the id of the line. They each represent
        a line.
      - `text` : Read-only file giving the text of the line.
@@ -106,15 +61,26 @@ All these files and directory are used to interact with the program.
         line is shown or not.
 
 ## CTL commands.
-TODO
+Here is the list of the commands accepted :
+ - `quit` : close the program.
+ - `refresh` : update the screen. It is necessary to send it after hiding or
+     showing lines.
+ - `term mode` : `mode` must be either `on`, to enable the term-escape, `off`
+     to disable it or `toggle` to toggle it.
 
 ## Bindings.
 TODO
 
 ## Colors.
-TODO
-
-## Selection rules.
+They are eight supported colors, which are designated by their name :
+ - `black`
+ - `red`
+ - `green`
+ - `yellow`
+ - `blue`
+ - `magenta`
+ - `cyan`
+ - `white`
 
 ## Feeding
 The feeding is the act of populating the list. It is done by a program setted
