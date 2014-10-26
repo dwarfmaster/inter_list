@@ -7,9 +7,10 @@ OBJS=objs/main.o \
 	 objs/cmdlifo.o \
 	 objs/feeder.o \
 	 objs/commands.o \
-	 objs/bars.o
+	 objs/bars.o \
+	 objs/fs.o
 CFLAGS=-Wall -Wextra -g `pkg-config --cflags ncurses`
-LDFLAGS=`pkg-config --libs ncurses`
+LDFLAGS=`pkg-config --libs ncurses` -lixp
 PROG=list.out
 CC=gcc
 
