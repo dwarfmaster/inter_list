@@ -4,8 +4,8 @@
 
 #include <stdbool.h>
 
-/* Init the filesystem. */
-bool fs_init();
+/* Init the filesystem. Open the unix socket specified by path. */
+bool fs_init(const char* path);
 
 /* Close the filesystem and free the ressources. */
 void fs_close();
