@@ -3,6 +3,7 @@
 #define DEF_FS
 
 #include <stdbool.h>
+#include <ixp.h>
 
 /* Init the filesystem. Open the unix socket specified by path. */
 bool fs_init(const char* path);
@@ -13,10 +14,8 @@ void fs_close();
 /* Get the FD to watch. */
 int fs_fd();
 
-/* Update the fs to apply the changes made to it and take into account the
- * internal changes.
- */
-void fs_update();
+/* Callback to bind to fs_fd in ixp mainloop. */
+void fs_update(IxpConn* c);
 
 #endif
 

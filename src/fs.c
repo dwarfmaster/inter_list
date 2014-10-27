@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ixp.h>
 
 /* The QID of the first line. */
 #define QID_LIST_OFFSET 15
@@ -517,9 +516,10 @@ int fs_fd()
     return _fs_fd;
 }
 
-void fs_update()
+void fs_update(IxpConn* c)
 {
-    /* TODO */
+    c->aux = &_fs_p9srv;
+    ixp_serve9conn(c);
 }
 
 
