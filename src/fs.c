@@ -1,5 +1,6 @@
 
 #include "fs.h"
+#include "feeder.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,9 +85,102 @@ static void _fs_clunk(Ixp9Req* r)
     /* TODO */
 }
 
+size_t _fs_pow(size_t nb, size_t pow)
+{
+    size_t i;
+    size_t ret = 1;
+
+    for(i = 0; i < pow; ++i)
+        ret *= nb;
+    return ret;
+}
+
+bool _fs_strtol(const char* str, size_t* l)
+{
+    size_t len = strlen(str);
+    size_t ret, i;
+
+    ret = 0;
+    for(i = 0; i < len; ++i) {
+        if(str[i] < '0' || str[i] > '9')
+            return false;
+        ret += (str[i] - '0') * _fs_pow(10, len - i - 1);
+    }
+
+    if(l)
+        *l = ret;
+    return true;
+}
+
 static void _fs_walk(Ixp9Req* r)
 {
-    /* TODO */
+    char buf[256];
+    uint16_t cwd, qid, path;
+    uint8_t type;
+    int i;
+    size_t id;
+    const char* pth;
+
+    cwd = r->fid->qid.path;
+    r->ofcall.rwalk.nwqid = 0;
+    for(i = 0; i < r->ifcall.twalk.nwname; ++i) {
+        pth = r->ifcall.twalk.wname[i];
+        type = P9_QTFILE;
+
+        /* Contents of the root directory. */
+        if(cwd == 0) {
+            if(strcmp(pth, "ctl") == 0)           path = QID_CTL;
+            else if(strcmp(pth, "feed") == 0)     path = QID_FEED;
+            else if(strcmp(pth, "bindings") == 0) path = QID_BINDINGS;
+            else if(strcmp(pth, "top") == 0)      path = QID_TOP;
+            else if(strcmp(pth, "bot") == 0)      path = QID_BOT;
+            else if(strcmp(pth, "colors") == 0)   path = QID_COLORS;
+            else if(strcmp(pth, "list") == 0) {
+                path = QID_LIST;
+                type = P9_QTDIR;
+            }
+            else goto walk_error;
+        }
+
+        /* Contents of the /list directory */
+        else if(cwd == QID_LIST_LINE) {
+            if(strcmp(pth, "scroll") == 0)         path = QID_SCROLL;
+            else if(strcmp(pth, "selection") == 0) path = QID_SELECTION;
+            else if(_fs_strtol(pth, &id) && id < feeder_end().id) {
+                type = P9_QTDIR;
+                path = GET_LINE_QID(id);
+            }
+            else goto walk_error;
+        }
+
+        /* Contents of any /list/nb directory */
+        else if(GET_FIELD_ID(cwd) == QID_LIST_LINE
+                && (id = GET_LINE_ID(cwd)) < feeder_end().id)  {
+            if(strcmp(pth, "text") == 0)
+                path = GET_TEXT_QID(id);
+            else if(strcmp(pth, "name") == 0)
+                path = GET_NAME_QID(id);
+            else if(strcmp(pth, "show") == 0)
+                path = GET_SHOW_QID(id);
+            else goto walk_error;
+        }
+
+        /* Error */
+        else {
+walk_error:
+            snprintf(buf, sizeof(buf),
+                    "%s: no such file or directory", pth);
+            ixp_respond(r, buf);
+            return;
+        }
+
+        qid = r->ofcall.rwalk.nwqid;
+        r->ofcall.rwalk.wqid[qid].type    = type;
+        r->ofcall.rwalk.wqid[qid].path    = path;
+        r->ofcall.rwalk.wqid[qid].version = 0;
+        ++r->ofcall.rwalk.nwqid;
+    }
+    ixp_respond(r, NULL);
 }
 
 static void _fs_dostat(IxpStat* st, uint32_t path)
