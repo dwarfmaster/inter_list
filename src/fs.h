@@ -14,7 +14,10 @@ void fs_close();
 /* Get the FD to watch. */
 int fs_fd();
 
-/* Callback to bind to fs_fd in ixp mainloop. */
+/* Get the aux pointer to give to ixp_listen for fs_fd() */
+void* fs_aux();
+
+/* Callback to bind to fs_fd() in ixp mainloop. */
 void fs_update(IxpConn* c);
 
 #endif

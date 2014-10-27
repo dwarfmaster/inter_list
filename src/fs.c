@@ -516,9 +516,13 @@ int fs_fd()
     return _fs_fd;
 }
 
+void* fs_aux()
+{
+    return &_fs_p9srv;
+}
+
 void fs_update(IxpConn* c)
 {
-    c->aux = &_fs_p9srv;
     ixp_serve9conn(c);
 }
 

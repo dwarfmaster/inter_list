@@ -2,7 +2,6 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <locale.h>
-#include <ixp.h>
 #include "spawn.h"
 #include "strformat.h"
 #include "curses.h"
@@ -12,6 +11,7 @@
 #include "feeder.h"
 #include "commands.h"
 #include "bars.h"
+#include "fs.h"
 
 static void _cb_common()
 {
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     size_t i, size;
     IxpServer srv;
 
-    if(argc < 2) {
+    if(argc < 3) {
         printf("Too few arguments.\n");
         return 1;
     }
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
     cmd[0] = '\0';
     size = 4095;
-    for(i = 1; i < (size_t)argc; ++i) {
+    for(i = 2; i < (size_t)argc; ++i) {
         strncat(cmd, argv[i], size);
         size = 4095 - strlen(cmd);
         strncat(cmd, " ", size);
@@ -115,17 +115,24 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    if(!fs_init(argv[1])) {
+        printf("Couldn't init the fs server on %s\n", argv[1]);
+        return 1;
+    }
+
     /* Setting up the ixp server. */
     srv.conn    = NULL;
     srv.running = true;
-    ixp_listen(&srv, feeder_fd(),  NULL, _cb_feeder,  NULL);
-    ixp_listen(&srv, cmdlifo_fd(), NULL, _cb_cmdlifo, NULL);
-    ixp_listen(&srv, 0,            NULL, _cb_events,  NULL);
+    ixp_listen(&srv, feeder_fd(),  NULL,     _cb_feeder,  NULL);
+    ixp_listen(&srv, cmdlifo_fd(), NULL,     _cb_cmdlifo, NULL);
+    ixp_listen(&srv, 0,            NULL,     _cb_events,  NULL);
+    ixp_listen(&srv, fs_fd(),      fs_aux(), fs_update,   NULL);
 
     curses_draw();
     while(srv.running)
         ixp_serverloop(&srv);
 
+    fs_close();
     events_quit();
     feeder_quit();
     cmdlifo_quit();
