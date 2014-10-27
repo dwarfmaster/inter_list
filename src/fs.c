@@ -14,6 +14,15 @@
 /* The QID of the show field in a line. */
 #define QID_LIST_SHOW 3
 
+/* Macros to get the QID of the field of a line. */
+#define GET_TEXT_QID(n) (QID_LIST_OFFSET + QID_LIST_STEP * (n) + QID_LIST_TEXT)
+#define GET_NAME_QID(n) (QID_LIST_OFFSET + QID_LIST_STEP * (n) + QID_LIST_NAME)
+#define GET_SHOW_QID(n) (QID_LIST_OFFSET + QID_LIST_STEP * (n) + QID_LIST_SHOW)
+/* Get the line nb from a QID */
+#define GET_LINE_ID(q) (((q) - QID_LIST_OFFSET) / QID_LIST_STEP)
+/* Get the id of the field in a line from a QID. */
+#define GET_FIELD_ID(q) (((q) - QID_LIST_OFFSET) % QID_LIST_STEP)
+
 /* The QIDs of the different files (see README for the detail of the files). */
 enum { QID_ROOT = 0, /* /               */
     QID_CTL,         /* /ctl            */
@@ -24,17 +33,77 @@ enum { QID_ROOT = 0, /* /               */
     QID_COLORS,      /* /colors         */
     QID_LIST,        /* /list           */
     QID_SCROLL,      /* /list/scroll    */
-    QID_SELECTION    /* /list/selection */
+    QID_SELECTION,   /* /list/selection */
+    QID_END          /* The last of specials QIDs */
 };
 
 /* The fd of the server. */
 static int _fs_fd;
-static IxpServer _fs_srv;
-static IxpConn   _fs_conn;
 
 /* The filesystem call */
-static Ixp9Srv _fs_p9srv;
-/* TODO fill _fs_p9srv */
+static void _fs_attach(Ixp9Req* r);
+static void _fs_open(Ixp9Req* r);
+static void _fs_clunk(Ixp9Req* r);
+static void _fs_walk(Ixp9Req* r);
+static void _fs_stat(Ixp9Req* r);
+static void _fs_read(Ixp9Req* r);
+static void _fs_write(Ixp9Req* r);
+static void _fs_wstat(Ixp9Req* r);
+
+static Ixp9Srv _fs_p9srv = {
+    .open   = _fs_open,
+    .clunk  = _fs_clunk,
+    .walk   = _fs_walk,
+    .read   = _fs_read,
+    .stat   = _fs_stat,
+    .write  = _fs_write,
+    .wstat  = _fs_wstat,
+    .attach = _fs_attach
+};
+
+static void _fs_attach(Ixp9Req* r)
+{
+    r->fid->qid.type = P9_QTDIR;
+    r->fid->qid.path = QID_ROOT;
+    r->ofcall.rattach.qid = r->fid->qid;
+    ixp_respond(r, NULL);
+}
+
+static void _fs_open(Ixp9Req* r)
+{
+    /* TODO */
+}
+
+static void _fs_clunk(Ixp9Req* r)
+{
+    /* TODO */
+}
+
+static void _fs_walk(Ixp9Req* r)
+{
+    /* TODO */
+}
+
+static void _fs_stat(Ixp9Req* r)
+{
+    /* TODO */
+}
+
+static void _fs_read(Ixp9Req* r)
+{
+    /* TODO */
+}
+
+static void _fs_write(Ixp9Req* r)
+{
+    /* TODO */
+}
+
+static void _fs_wstat(Ixp9Req* r)
+{
+    /* Pretend it worked. */
+    ixp_respond(r, NULL);
+}
 
 bool fs_init(const char* path)
 {
@@ -47,14 +116,6 @@ bool fs_init(const char* path)
         _fs_fd = 0;
         return false;
     }
-
-    _fs_conn.srv   = &_fs_srv;
-    _fs_conn.next  = NULL;
-    _fs_conn.fd    = _fs_fd;
-    _fs_conn.aux   = &_fs_p9srv;
-    _fs_conn.close = NULL;
-    _fs_conn.read  = ixp_serve9conn;
-    _fs_srv.conn   = &_fs_conn;
     return true;
 }
 
@@ -70,7 +131,7 @@ int fs_fd()
 
 void fs_update()
 {
-    ixp_serve9conn(&_fs_conn);
+    /* TODO */
 }
 
 
