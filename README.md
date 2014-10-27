@@ -34,7 +34,7 @@ All these files and directory are used to interact with the program.
      gives the content of the top bar.
  - `bot` : same as `top` but for the bottom bar.
  - `colors` : set the foreground and background colors of each part of the
-     interface. See the colors part for details.
+     interface. See the colors part for details. This is a read-only file.
  - `list` : this directory contains all the detail about the contents of the
      list.
    - `scroll` : set the scroll mode. Written values must be either `pager` or
