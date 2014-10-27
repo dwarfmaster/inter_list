@@ -18,6 +18,7 @@ struct _feeder_line_t {
 static struct _feeder_line_t*  _feeder_lines;
 static size_t                  _feeder_nb;
 static size_t                  _feeder_capa;
+static char*                   _feeder_cmd;
 
 bool feeder_init()
 {
@@ -25,6 +26,7 @@ bool feeder_init()
     _feeder_capa   = 50;
     _feeder_lines  = malloc(sizeof(struct _feeder_line_t) * _feeder_capa);
     _feeder_sp     = spawn_init();
+    _feeder_cmd    = NULL;
     return _feeder_lines;
 }
 
@@ -39,6 +41,8 @@ void feeder_quit()
         }
         free(_feeder_lines);
     }
+    if(_feeder_cmd)
+        free(_feeder_cmd);
 }
 
 bool feeder_set(const char* command)
@@ -53,9 +57,22 @@ bool feeder_set(const char* command)
     }
     _feeder_nb = 0;
     curses_list_changed(false);
+    if(_feeder_cmd)
+        free(_feeder_cmd);
+    _feeder_cmd = NULL;
 
     _feeder_sp = spawn_create_shell(command);
-    return spawn_ok(_feeder_sp);
+    if(spawn_ok(_feeder_sp)) {
+        _feeder_cmd = strdup(command);
+        return true;
+    }
+    else
+        return false;
+}
+
+const char* feeder_get()
+{
+    return _feeder_cmd;
 }
 
 int feeder_fd()

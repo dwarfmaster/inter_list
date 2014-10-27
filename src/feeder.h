@@ -22,6 +22,9 @@ void feeder_quit();
 /* Set the feeding command : clear any previous content. */
 bool feeder_set(const char* command);
 
+/* Get the feeding command previously setted. */
+const char* feeder_get();
+
 /* Get the fd to watch. */
 int feeder_fd();
 
