@@ -127,6 +127,7 @@ static void _fs_open(Ixp9Req* r)
                 break;
             case QID_BINDINGS:
                 /* TODO */
+            case QID_ROOT:
             case QID_CTL:
             case QID_COLORS:
                 /* Nothing to do. */
