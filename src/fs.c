@@ -140,8 +140,7 @@ static void _fs_open(Ixp9Req* r)
     else if(GET_LINE_ID(qid) < feeder_end().id) {
         i = GET_LINE_ID(qid);
         it = feeder_begin();
-        /* TODO next over reals, not shown. */
-        feeder_next(&it, i);
+        feeder_next_real(&it, i);
         switch(GET_FIELD_ID(qid)) {
             case QID_LIST_TEXT:
                 r->fid->aux = strdup(feeder_get_it_text(it));
@@ -150,7 +149,10 @@ static void _fs_open(Ixp9Req* r)
                 r->fid->aux = strdup(feeder_get_it_name(it));
                 break;
             case QID_LIST_SHOW:
-                /* TODO */
+                if(feeder_is_it_hidden(it))
+                    r->fid->aux = strdup("0");
+                else
+                    r->fid->aux = strdup("1");
                 break;
             case QID_LIST_LINE:
                 /* Nothing to do. */
@@ -170,7 +172,10 @@ open_error:
 
 static void _fs_clunk(Ixp9Req* r)
 {
-    /* TODO */
+    void* aux = r->fid->aux;
+    if(aux)
+        free(aux);
+    ixp_respond(r, NULL);
 }
 
 size_t _fs_pow(size_t nb, size_t pow)
