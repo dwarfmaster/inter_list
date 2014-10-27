@@ -1,6 +1,8 @@
 
 #include "fs.h"
 #include "feeder.h"
+#include "bars.h"
+#include "curses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -77,7 +79,93 @@ static void _fs_attach(Ixp9Req* r)
 
 static void _fs_open(Ixp9Req* r)
 {
-    /* TODO */
+    uint32_t qid;
+    const char* str;
+    size_t i;
+    char buf[64];
+    feeder_iterator_t it;
+
+    qid = r->fid->qid.path;
+    r->fid->aux = NULL;
+
+    /* TODO : most of this is only needed for read opens. */
+    if(qid < QID_END) {
+        switch(qid) {
+            case QID_FEED:
+                str = feeder_get();
+                if(str) r->fid->aux = strdup(str);
+                else    r->fid->aux = strdup("");
+                break;
+            case QID_TOP:
+                str = bars_top_get();
+                if(str) r->fid->aux = strdup(str);
+                else    r->fid->aux = strdup("");
+                break;
+            case QID_BOT:
+                str = bars_bot_get();
+                if(str) r->fid->aux = strdup(str);
+                else    r->fid->aux = strdup("");
+                break;
+            case QID_SCROLL:
+                if(curses_list_get_mode())
+                    r->fid->aux = strdup("pager");
+                else
+                    r->fid->aux = strdup("list");
+                break;
+            case QID_SELECTION:
+                i = curses_list_get();
+                snprintf(buf, 64, "%lu", i);
+                r->fid->aux = strdup(buf);
+                break;
+            case QID_LIST:
+                r->fid->aux = malloc(sizeof(feeder_iterator_t));
+                if(!r->fid->aux) {
+                    ixp_respond(r, "out of memory");
+                    return;
+                }
+                it = feeder_begin();
+                memcpy(r->fid->aux, &it, sizeof(feeder_iterator_t));
+                break;
+            case QID_BINDINGS:
+                /* TODO */
+            case QID_CTL:
+            case QID_COLORS:
+                /* Nothing to do. */
+                break;
+            default:
+                goto open_error;
+        }
+    }
+
+    else if(GET_LINE_ID(qid) < feeder_end().id) {
+        i = GET_LINE_ID(qid);
+        it = feeder_begin();
+        /* TODO next over reals, not shown. */
+        feeder_next(&it, i);
+        switch(GET_FIELD_ID(qid)) {
+            case QID_LIST_TEXT:
+                r->fid->aux = strdup(feeder_get_it_text(it));
+                break;
+            case QID_LIST_NAME:
+                r->fid->aux = strdup(feeder_get_it_name(it));
+                break;
+            case QID_LIST_SHOW:
+                /* TODO */
+                break;
+            case QID_LIST_LINE:
+                /* Nothing to do. */
+                break;
+            default:
+                goto open_error;
+        }
+    }
+
+    else {
+open_error:
+        ixp_respond(r, "invalid qid in open");
+        return;
+    }
+    ixp_respond(r, NULL);
 }
 
 static void _fs_clunk(Ixp9Req* r)
