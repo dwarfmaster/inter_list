@@ -384,9 +384,102 @@ static void _fs_stat(Ixp9Req* r)
     ixp_respond(r, NULL);
 }
 
+#define DOSTAT(x) _fs_dostat(&st, (x)); \
+                  ixp_pstat(&m, &st); \
+                  r->ofcall.rread.count += ixp_sizeof_stat(&st);
+
 static void _fs_read(Ixp9Req* r)
 {
-    /* TODO */
+    uint32_t path = r->fid->qid.path;
+    void* aux = r->fid->aux;
+    r->ofcall.rread.count = 0;
+
+    if(path == QID_ROOT
+            || path == QID_LIST
+            || GET_FIELD_ID(path) == QID_LIST_LINE) {
+        IxpStat st = { 0 };
+        IxpMsg m;
+        char buf[512];
+        m = ixp_message(buf, sizeof(buf), MsgPack);
+        size_t i;
+        feeder_iterator_t it;
+
+        switch(path) {
+            case QID_ROOT:
+                if(r->ifcall.tread.offset > 0) {
+                    /* Hack : consider the directory can be read in one go. */
+                    ixp_respond(r, NULL);
+                    return;
+                }
+                for(i = 1; i <= QID_LIST; ++i)
+                    DOSTAT(i);
+                break;
+
+            case QID_LIST:
+                it = *(feeder_iterator_t*)aux;
+                if(!it.valid) {
+                    ixp_respond(r, NULL);
+                    return;
+                } else if(r->ifcall.tread.offset == 0) {
+                    DOSTAT(QID_SCROLL);
+                    DOSTAT(QID_SELECTION);
+                }
+                _fs_dostat(&st, it.id);
+                i = ixp_sizeof_stat(&st);
+                while(it.valid
+                        && r->ofcall.rread.count + i < r->ifcall.tread.count) {
+                    ixp_pstat(&m, &st);
+                    r->ofcall.rread.count += i;
+                    feeder_next_real(&it, 1);
+                    if(!it.valid)
+                        break;
+                    _fs_dostat(&st, it.id);
+                    i = ixp_sizeof_stat(&st);
+                }
+                *(feeder_iterator_t*)r->fid->aux = it;
+                break;
+
+            default:
+                i = GET_LINE_ID(path);
+                if(r->ifcall.tread.offset > 0) {
+                    /* Hack : consider the directory can be read in one go. */
+                    ixp_respond(r, NULL);
+                    return;
+                }
+                DOSTAT(GET_TEXT_QID(i));
+                DOSTAT(GET_NAME_QID(i));
+                DOSTAT(GET_SHOW_QID(i));
+                break;
+        }
+
+        if(!(r->ofcall.rread.data = malloc(r->ofcall.rread.count))) {
+            r->ofcall.rread.count = 0;
+            ixp_respond(r, "out of memory");
+            return;
+        }
+        memcpy(r->ofcall.rread.data, m.data, r->ofcall.rread.count);
+    }
+
+    /* Content of a simple file. */
+    else if(aux) {
+        char* buf = aux;
+        size_t len = strlen(buf);
+        if(r->ifcall.tread.offset < len) {
+            if(r->ifcall.tread.offset + r->ifcall.tread.count > len)
+                r->ofcall.rread.count = len - r->ifcall.tread.offset;
+            else
+                r->ofcall.rread.count = r->ifcall.tread.count;
+            if(!(r->ofcall.rread.data = malloc(r->ofcall.rread.count))) {
+                r->ofcall.rread.count = 0;
+                ixp_respond(r, "out of memory");
+                return;
+            }
+            memcpy(r->ofcall.rread.data, buf + r->ifcall.tread.offset,
+                    r->ofcall.rread.count);
+        }
+    }
+
+    ixp_respond(r, NULL);
 }
 
 static void _fs_write(Ixp9Req* r)
