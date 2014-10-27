@@ -41,6 +41,7 @@ feeder_iterator_t feeder_begin();
  */
 feeder_iterator_t feeder_end();
 
+/* TODO merge feeder_{next,prev} with feeder_{next,prev}_real */
 /* Increment the iterator n times. If it goes after the end, it will be set
  * invalid.
  */
@@ -51,6 +52,10 @@ feeder_iterator_t feeder_next(feeder_iterator_t* it, size_t n);
  */
 feeder_iterator_t feeder_prev(feeder_iterator_t* it, size_t n);
 
+/* Same as feeder_{next,prev}, but considers hidden lines. */
+feeder_iterator_t feeder_next_real(feeder_iterator_t* it, size_t n);
+feeder_iterator_t feeder_prev_real(feeder_iterator_t* it, size_t n);
+
 /* Get the text of the line pointed by an iterator. Returns NULL if it is
  * invalid
  */
@@ -60,6 +65,9 @@ const char* feeder_get_it_text(feeder_iterator_t it);
  * invalid.
  */
 const char* feeder_get_it_name(feeder_iterator_t it);
+
+/* Indicates if the iterators point to a hidden line. */
+bool feeder_is_it_hidden(feeder_iterator_t it);
 
 /* Compare two iterators. The semantics are the same as strcmp. */
 int feeder_it_cmp(feeder_iterator_t it1, feeder_iterator_t it2);

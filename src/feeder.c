@@ -180,6 +180,26 @@ feeder_iterator_t feeder_next(feeder_iterator_t* it, size_t n)
     return *it;
 }
 
+feeder_iterator_t feeder_next_real(feeder_iterator_t* it, size_t n)
+{
+    size_t count;
+    if(!it->valid || n == 0)
+        return *it;
+
+    count = 0;
+    while(count < n) {
+        ++it->id;
+        if(it->id >= _feeder_nb) {
+            it->valid = false;
+            return *it;
+        } else if(_feeder_lines[it->id].show)
+            ++it->vid;
+        ++count;
+    }
+
+    return *it;
+}
+
 feeder_iterator_t feeder_prev(feeder_iterator_t* it, size_t n)
 {
     size_t count;
@@ -204,6 +224,29 @@ feeder_iterator_t feeder_prev(feeder_iterator_t* it, size_t n)
     return *it;
 }
 
+feeder_iterator_t feeder_prev_real(feeder_iterator_t* it, size_t n)
+{
+    size_t count;
+    if(!it->valid || n == 0)
+        return *it;
+
+    count = 0;
+    while(count < n) {
+        if(it->id == 0) {
+            if(count != n) {
+                it->valid = false;
+                return *it;
+            }
+        }
+        --it->id;
+        if(_feeder_lines[it->id].show)
+            --it->vid;
+        ++count;
+    }
+
+    return *it;
+}
+
 const char* feeder_get_it_text(feeder_iterator_t it)
 {
     if(!it.valid)
@@ -216,6 +259,13 @@ const char* feeder_get_it_name(feeder_iterator_t it)
     if(!it.valid)
         return NULL;
     return _feeder_lines[it.id].id;
+}
+
+bool feeder_is_it_hidden(feeder_iterator_t it)
+{
+    if(!it.valid)
+        return true;
+    return !_feeder_lines[it.id].show;
 }
 
 int feeder_it_cmp(feeder_iterator_t it1, feeder_iterator_t it2)
