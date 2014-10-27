@@ -59,6 +59,16 @@ bool bars_bot_set(const char* br)
     return true;
 }
 
+const char* bars_top_get()
+{
+    return strformat_get(_bars_top);
+}
+
+const char* bars_bot_get()
+{
+    return strformat_get(_bars_bot);
+}
+
 void bars_update()
 {
     size_t i;

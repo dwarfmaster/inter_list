@@ -16,6 +16,10 @@ void bars_quit();
 bool bars_top_set(const char* br);
 bool bars_bot_set(const char* br);
 
+/* Get the string of the top/bottom bars. */
+const char* bars_top_get();
+const char* bars_bot_get();
+
 /* Update the values in the bars. */
 void bars_update();
 
