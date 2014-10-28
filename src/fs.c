@@ -221,7 +221,7 @@ static void _fs_walk(Ixp9Req* r)
         type = P9_QTFILE;
 
         /* Contents of the root directory. */
-        if(cwd == 0) {
+        if(cwd == QID_ROOT) {
             if(strcmp(pth, "ctl") == 0)           path = QID_CTL;
             else if(strcmp(pth, "feed") == 0)     path = QID_FEED;
             else if(strcmp(pth, "bindings") == 0) path = QID_BINDINGS;
@@ -332,6 +332,7 @@ static void _fs_dostat(IxpStat* st, uint32_t path)
     else {
         size_t id = GET_LINE_ID(path);
         char buffer[64];
+        static char* bufl = NULL;
 
         st->type     = P9_QTFILE;
         st->qid.type = P9_QTFILE;
@@ -344,8 +345,9 @@ static void _fs_dostat(IxpStat* st, uint32_t path)
                 st->type     = P9_QTDIR;
                 st->qid.type = P9_QTDIR;
                 st->mode     = 0500 | P9_DMDIR;
-                /* TODO may break : buffer not available when leaving. */
-                st->name     = buffer;
+                if(bufl)
+                    free(bufl);
+                st->name     = bufl = strdup(buffer);
                 break;
             case QID_LIST_TEXT:
                 st->name = "text";
@@ -424,7 +426,7 @@ static void _fs_read(Ixp9Req* r)
                     DOSTAT(QID_SCROLL);
                     DOSTAT(QID_SELECTION);
                 }
-                _fs_dostat(&st, it.id);
+                _fs_dostat(&st, GET_LINE_QID(it.id));
                 i = ixp_sizeof_stat(&st);
                 while(it.valid
                         && r->ofcall.rread.count + i < r->ifcall.tread.count) {
@@ -433,7 +435,7 @@ static void _fs_read(Ixp9Req* r)
                     feeder_next_real(&it, 1);
                     if(!it.valid)
                         break;
-                    _fs_dostat(&st, it.id);
+                    _fs_dostat(&st, GET_LINE_QID(it.id));
                     i = ixp_sizeof_stat(&st);
                 }
                 *(feeder_iterator_t*)r->fid->aux = it;
