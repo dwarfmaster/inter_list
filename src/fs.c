@@ -413,8 +413,9 @@ static void _fs_read(Ixp9Req* r)
                     ixp_respond(r, NULL);
                     return;
                 }
-                for(i = 1; i <= QID_LIST; ++i)
+                for(i = 1; i <= QID_LIST; ++i) {
                     DOSTAT(i);
+                }
                 break;
 
             case QID_LIST:
