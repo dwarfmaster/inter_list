@@ -310,6 +310,7 @@ static void _fs_dostat(IxpStat* st, uint32_t path)
             case QID_COLORS:
                 st->name   = "colors";
                 st->length = 8; /* The number of color pairs. */
+                st->mode   = 0200;
                 break;
             case QID_LIST:
                 st->type     = P9_QTDIR;
