@@ -399,7 +399,7 @@ static void _fs_read(Ixp9Req* r)
 
     if(path == QID_ROOT
             || path == QID_LIST
-            || GET_FIELD_ID(path) == QID_LIST_LINE) {
+            || (path > QID_END && GET_FIELD_ID(path) == QID_LIST_LINE)) {
         IxpStat st = { 0 };
         IxpMsg m;
         char buf[512];
