@@ -236,7 +236,7 @@ static void _fs_walk(Ixp9Req* r)
         }
 
         /* Contents of the /list directory */
-        else if(cwd == QID_LIST_LINE) {
+        else if(cwd == QID_LIST) {
             if(strcmp(pth, "scroll") == 0)         path = QID_SCROLL;
             else if(strcmp(pth, "selection") == 0) path = QID_SELECTION;
             else if(_fs_strtol(pth, &id) && id < feeder_end().id) {
