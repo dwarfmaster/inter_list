@@ -52,7 +52,7 @@ bool feeder_set(const char* command)
         }
     }
     _feeder_nb = 0;
-    curses_list_changed(false);
+    curses_list_changed(true);
 
     _feeder_sp = spawn_create_shell(command);
     return spawn_ok(_feeder_sp);
